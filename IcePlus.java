@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.awt.image.BufferedImage;
 
 public class IcePlus extends JFrame implements Runnable, MouseListener, KeyListener {
+   private final String rawFolder = "raw/";
+   private final String soundsFolder = "sounds/";
    private int gameMode = 0;
    private int counter;
    private int mazeCount;
@@ -156,21 +158,21 @@ public class IcePlus extends JFrame implements Runnable, MouseListener, KeyListe
       this.spriteByte = new byte[32208];
 
       try {
-         InputStream var5 = this.getClass().getResourceAsStream("sprites1.raw");
+         InputStream var5 = this.getClass().getResourceAsStream(rawFolder + "sprites1.raw");
 
          for (int var8 = 0; var8 < 13008; var8++) {
             this.spriteByte[var8] = (byte)var5.read();
          }
 
          var5.close();
-         var5 = this.getClass().getResourceAsStream("sprites2.raw");
+         var5 = this.getClass().getResourceAsStream(rawFolder +  "sprites2.raw");
 
          for (int var9 = 0; var9 < 10752; var9++) {
             this.spriteByte[13008 + var9] = (byte)var5.read();
          }
 
          var5.close();
-         var5 = this.getClass().getResourceAsStream("sprites3.raw");
+         var5 = this.getClass().getResourceAsStream(rawFolder + "sprites3.raw");
 
          for (int var10 = 0; var10 < 8448; var10++) {
             this.spriteByte[23760 + var10] = (byte)var5.read();
@@ -205,7 +207,7 @@ public class IcePlus extends JFrame implements Runnable, MouseListener, KeyListe
          this.mt.addImage(this.shadows[var13], 1);
       }
 
-      this.logo = this.loadPixels("logo.raw", 10208);
+      this.logo = this.loadPixels(rawFolder + "logo.raw", 10208);
       this.logoIm = this.createImage(new MemoryImageSource(176, 58, this.opaque, this.logo, 0, 176));
       this.mt.addImage(this.logoIm, 0);
       boolean var4 = false;
@@ -240,7 +242,7 @@ public class IcePlus extends JFrame implements Runnable, MouseListener, KeyListe
          sounds = new Clip[6];
          for (int i = 0; i < 6; i++) {
                // Load sound files from the local filesystem
-               File soundFile = new File("sound" + i + ".wav"); // Use .wav files
+               File soundFile = new File(soundsFolder + "sound" + i + ".wav"); // Use .wav files
                if (soundFile.exists()) {
                   sounds[i] = AudioSystem.getClip();
                   sounds[i].open(AudioSystem.getAudioInputStream(soundFile));
@@ -308,7 +310,7 @@ public class IcePlus extends JFrame implements Runnable, MouseListener, KeyListe
          this.backByte[var1 + 2304] = this.spriteByte[var1 + 18384];
       }
 
-      byte[] var5 = this.loadPixels("bigiceshadow.raw", 256);
+      byte[] var5 = this.loadPixels(rawFolder + "bigiceshadow.raw", 256);
       int var3 = 1152;
       int var4 = 0;
 
@@ -1327,7 +1329,7 @@ public class IcePlus extends JFrame implements Runnable, MouseListener, KeyListe
    }
 
    void loadLevelGraphics(int var1) {
-      byte[] var6 = this.loadPixels(this.levNames[var1], this.levLengths[var1]);
+      byte[] var6 = this.loadPixels(rawFolder + this.levNames[var1], this.levLengths[var1]);
 
       for (int var2 = 0; var2 < 768; var2++) {
          this.backByte[var2 + 3072] = var6[var2];
