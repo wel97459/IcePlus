@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "game.h"
+#include "tileloader.h"
 
 #define SCREEN_WIDTH 176
 #define SCREEN_HEIGHT 208
-
 
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
@@ -28,8 +28,11 @@ void initGame(GameState* game) {
                                    SCREEN_WIDTH * 3, SCREEN_HEIGHT * 3, SDL_WINDOW_SHOWN);
     game->renderer = SDL_CreateRenderer(game->window, -1, SDL_RENDERER_ACCELERATED);
     SDL_RenderSetLogicalSize(game->renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
-    
+    printf("Loading Sprites - ");
+    fflush(stdout);
     loadSprites(game);
+    printf("Done\n");
+    fflush(stdout);
     //loadSounds(game);
     
     // Initialize game objects

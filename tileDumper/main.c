@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
 
     for (int var11 = 0; var11 < var13; var11++) {
         backByte[var14++] = bigdirt[var5++];
-     }
+    }
 
     // Calculate the total width and height needed for all sprites
     int totalWidth = 0;
@@ -194,6 +194,7 @@ int main(int argc, char* argv[]) {
         totalHeight = MAX(totalHeight, propbackH[s]);
     }
     totalWidth += NUM_BACK;
+
     // Create a window and renderer
     window = SDL_CreateWindow("Logo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, totalWidth*6, totalHeight*6, SDL_WINDOW_SHOWN);
     if (!window) {

@@ -1,12 +1,15 @@
 #ifndef TILELOADER_H
 #define TILELOADER_H
 
-#define NUM_SPRITES 48
-const int spriteH[] = { 29, 32, 31, 29, 31, 31, 29, 31, 32, 32, 30, 32, 32, 30, 24, 27, 30, 30, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 30, 29, 27, 25, 23, 22, 25, 27, 29, 27, 15, 15, 15, 15, 16, 12};
-const int spriteEffH[] ={ 29, 32, 31, 29, 31, 31, 29, 31, 32, 32, 30, 32, 32, 30, 24, 27, 30, 30, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 30, 29, 27, 25, 23, 22, 25, 27, 29, 27, 22, 22, 22, 22, 16, 12};
+#include <SDL2/SDL.h>
+#include "game.h"
 
-#define NUM_BACK 17
-const int propbackW[] = {24, 24, 24, 24, 24, 24, 72, 24, 24, 24, 24, 12, 12, 12, 12, 12, 12};
-const int propbackH[] = {32, 32, 32, 32, 32, 32, 16, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
+size_t LoadData(char *filename, char *data);
+size_t GetFileSize(char *filename);
+SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha);
+int loadSpriteData(unsigned char* spriteData, unsigned char* backByte);
+int loadBlockData(const char *bigfile, unsigned char* backByte);
+int loadSprites(GameState* game);
+int loadBlocks(GameState* game, const char *filename);
 
 #endif
