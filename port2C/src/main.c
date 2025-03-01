@@ -1,5 +1,4 @@
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -21,7 +20,6 @@ void loadSounds(GameState* game) {
 
 void initGame(GameState* game) {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    IMG_Init(IMG_INIT_PNG);
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     
     game->window = SDL_CreateWindow("IcePlus", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -81,8 +79,11 @@ void renderGame(GameState* game) {
     
     // Render objects
 
-            SDL_Rect dest = {game->objs[0].x, game->objs[0].y, 24, 32};
-            SDL_RenderCopy(game->renderer, game->sprites[0], NULL, &dest);
+            SDL_Rect dest = {40, 40, 24, 32};
+            SDL_RenderCopy(game->renderer, game->sprites[18], NULL, &dest);
+            dest.x = game->objs[0].x;
+            dest.y = game->objs[0].y;
+            SDL_RenderCopy(game->renderer, game->sprites[1], NULL, &dest);
 
     
     SDL_RenderPresent(game->renderer);
@@ -98,7 +99,6 @@ void cleanup(GameState* game) {
     SDL_DestroyRenderer(game->renderer);
     SDL_DestroyWindow(game->window);
     Mix_CloseAudio();
-    IMG_Quit();
     SDL_Quit();
 }
 

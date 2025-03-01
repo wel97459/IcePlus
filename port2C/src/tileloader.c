@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include "tileloader.h"
 
+const unsigned char rgb332_3b_lut[] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff };
+const unsigned char rgb332_2b_lut[] = {0x00, 0x55, 0xaa, 0xff };
+
+
 const int spriteH[] = { 29, 32, 31, 29, 31, 31, 29, 31, 32, 32, 30, 32, 32, 30, 24, 27, 30, 30, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 30, 29, 27, 25, 23, 22, 25, 27, 29, 27, 15, 15, 15, 15, 16, 12};
 const int spriteEffH[] ={ 29, 32, 31, 29, 31, 31, 29, 31, 32, 32, 30, 32, 32, 30, 24, 27, 30, 30, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 30, 29, 27, 25, 23, 22, 25, 27, 29, 27, 22, 22, 22, 22, 16, 12};
 
@@ -73,7 +77,7 @@ SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha)
 
     uint32_t* pixels = (uint32_t*)dest->pixels;
     uint8_t* src_pixels = (uint8_t*)surface->pixels;
-
+    //111 111 11
     // Iterate over each pixel
     for (int y = 0; y < surface->h; y++) {
         for (int x = 0; x < surface->w; x++) {
@@ -81,14 +85,14 @@ SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha)
             uint8_t pixel = *(src_pixels + y * surface->pitch + x);
 
             // Extract RGB components from the 3-bit format
-            uint8_t red = (pixel >> 1) & 0x03;  // 2 bits for red
-            uint8_t green = pixel & 0x01;       // 1 bit for green
-            uint8_t blue = (pixel >> 2) & 0x03; // 2 bits for blue
+            uint8_t red = (pixel & 0xE0) >> 5;      // 3 bits for red
+            uint8_t green = (pixel & 0x1c) >> 2;    // 3 bit for green
+            uint8_t blue = (pixel & 0x03);            // 2 bits for blue
 
             // Convert to 8-bit components and scale appropriately
-            red = (red << 6) * 0x7F;          // Scale 2 bits to 8 bits
-            green = (green << 7) * 0x7F;       // Scale 1 bit to 8 bits
-            blue = (blue << 6) * 0x7F;         // Scale 2 bits to 8 bits
+            red = rgb332_3b_lut[red];           // Scale 3 bits to 8 bits
+            green = rgb332_3b_lut[green];       // Scale 3 bit to 8 bits
+            blue = rgb332_2b_lut[blue];        // Scale 2 bits to 8 bits
 
             // Create the RGBA pixel (assuming alpha is 255 for no transparency)
             uint32_t rgba_pixel = (red << 16) | (green << 8) | blue | ((red+green+blue+noAlpha) ? 0xFF000000 : 0x00000000);
@@ -107,9 +111,6 @@ SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha)
 
 int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
 {
-    spriteData = (unsigned char*) malloc(SPRITE_SIZE);
-    backByte = (unsigned char*) malloc(BACKBYTE_SIZE);
-
     if(!LoadData(FILE_LOC "sprites1.raw", &spriteData[0]) ||
     !LoadData(FILE_LOC "sprites2.raw", &spriteData[13008]) ||
     !LoadData(FILE_LOC "sprites3.raw", &spriteData[23760])) {
@@ -202,7 +203,8 @@ int loadBlockData(const char *bigfile, unsigned char* backByte)
 
 
 int loadSprites(GameState* game) {
-    unsigned char* spriteData;
+    unsigned char* spriteData = (unsigned char*) malloc(SPRITE_SIZE);
+    backByte_ = (unsigned char*) malloc(BACKBYTE_SIZE);
 
     if(!loadSpriteData(spriteData, backByte_)){
         printf("Failed to load sprite data.");
@@ -212,7 +214,7 @@ int loadSprites(GameState* game) {
     int propO = 0;
     for (int i = 0; i < SPRITE_COUNT; i++) {
         // Create the individual sprite surface
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 24, spriteH[i], 8, SDL_PIXELFORMAT_RGB332);
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 24, 32, 8, SDL_PIXELFORMAT_RGB332);
         if (!surface) {
             printf("Failed to create surface: %s\n", SDL_GetError());
             return 0;
@@ -224,12 +226,13 @@ int loadSprites(GameState* game) {
         memcpy(surface->pixels, &spriteData[propO], surface->pitch * surface->h);
         printf("done\n");
         fflush(stdout);
-        //SDL_Surface* surfaceRGBA = convert_rgb332_to_rgba8888(surface, 0);
-        game->sprites[i] = SDL_CreateTextureFromSurface(game->renderer, surface);
+
+        SDL_Surface* surfaceRGBA = convert_rgb332_to_rgba8888(surface, 0);
+        game->sprites[i] = SDL_CreateTextureFromSurface(game->renderer, surfaceRGBA);
 
         // Cleanup the individual surface
         SDL_FreeSurface(surface);
-        //SDL_FreeSurface(surfaceRGBA);
+        SDL_FreeSurface(surfaceRGBA);
         propO += 24 * spriteH[i];
     }
     return 1;
