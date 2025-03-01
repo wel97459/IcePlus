@@ -4,6 +4,11 @@
 #include <SDL2/SDL.h>
 #include "game.h"
 
+
+extern const int spriteH[];
+extern const int propbackW[];
+extern const int propbackH[];
+
 size_t LoadData(char *filename, char *data);
 size_t GetFileSize(char *filename);
 SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha);

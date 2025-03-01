@@ -84,7 +84,9 @@ void renderGame(GameState* game) {
             dest.x = game->objs[0].x;
             dest.y = game->objs[0].y;
             SDL_RenderCopy(game->renderer, game->sprites[1], NULL, &dest);
-
+            dest.x = 40+24;
+            dest.y = 40+16;
+            SDL_RenderCopy(game->renderer, game->sprites[18], NULL, &dest);
     
     SDL_RenderPresent(game->renderer);
 }
