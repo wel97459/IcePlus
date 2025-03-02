@@ -19,12 +19,12 @@ const int spriteEffH[] = {
 };
 
 const int propbackW[] = {
-    24, 24, 24, 24, 24, 24, 72, 12, 12, 12, 12, 
-    12, 12, 12, 12, 12, 12
+    24, 24, 24, 24, 24, 24, 72, 24, 24, 24, 24, 
+    24, 24, 24, 24, 24, 24
 };
 
 const int propbackH[] = {
-    32, 32, 32, 32, 32, 32, 16, 16,  8,  8,  8, 
+    32, 32, 32, 32, 32, 32, 16, 16,  16,  16,  16, 
     8,  8,  8,  8,  8,  8
 };
 
@@ -178,8 +178,8 @@ int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
 {
     char* filename = malloc(256);
     sprintf(filename ,FILE_LOC "%s", bigfile);
-
-    unsigned char* bigdirt = malloc(GetFileSize(filename));
+    size_t fSize = GetFileSize(filename);
+    unsigned char* bigdirt = malloc(fSize);
     if(!LoadData(filename, bigdirt)){
         free(bigdirt);
         free(filename);
@@ -196,24 +196,25 @@ int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
        backByte[var9 + 4224] = bigdirt[768 + var9];
     }
 
-    int var5 = 4608;
+    int indexBig = 4608;
 
     for (int var4 = 0; var4 < 16; var4++) {
        for (int var10 = 0; var10 < 3; var10++) {
           for (int var3 = 0; var3 < 24; var3++) {
-            backByte[var5++] = bigdirt[1152 + var4 * 24 + var10 * 384 + var3];
+            backByte[indexBig++] = bigdirt[1152 + var4 * 24 + var10 * 384 + var3];
           }
        }
     }
 
-    game->levGround = (3072 - 2304) / 192;
-    int var13 = game->levGround * 192;
-    int var14 = 5760;
-    var5 = 2304;
+    game->levGround = (fSize - 2304) / 192;
+    int goundOffset = game->levGround * 192;
+    int index = 5760;
+    indexBig = 2304;
 
-    for (int var11 = 0; var11 < var13; var11++) {
-        backByte[var14++] = bigdirt[var5++];
+    for (int var11 = 0; var11 < goundOffset; var11++) {
+        backByte[index++] = bigdirt[indexBig++];
     }
+
     free(bigdirt);
     return 1;
 }

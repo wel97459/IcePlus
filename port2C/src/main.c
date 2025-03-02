@@ -85,7 +85,8 @@ void renderGame(GameState* game) {
     for(int i = 0; i<10; i++)
         drawSpriteSimple(game, i);
     if(test > BLOCK_COUNT) test=0;
-    drawBlockSimple(game, test, 100, 100);
+    for(int i = 0; i < BLOCK_COUNT; i++)
+        drawBlockSimple(game, i, 10+((i & 0x07)*24)+(i==7 ? 54 : 0), 100+((i>>3)*32));
     drawResetTarget(game);
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
