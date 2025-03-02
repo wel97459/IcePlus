@@ -3,13 +3,30 @@
 #include "tileloader.h"
 
 const int spriteH[] = {
-    29, 32, 31, 29, 31, 31, 29, 31, 32, 32, 30, 32, 32, 30, 24, 27, 30, 
-    30, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 30, 29, 
-    27, 25, 23, 22, 25, 27, 29, 27, 15, 15, 15, 15, 16, 12
+    29, 32, 31, 29, 31, 31, 29, 31, 32, 32, 30, 
+    32, 32, 30, 24, 27, 30, 30, 32, 32, 32, 32,
+    32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 30,
+    29, 27, 25, 23, 22, 25, 27, 29, 27, 15, 15, 
+    15, 15, 16, 12
 };
 
-const int propbackW[] = {24, 24, 24, 24, 24, 24, 72, 24, 24, 24, 24, 12, 12, 12, 12, 12, 12};
-const int propbackH[] = {32, 32, 32, 32, 32, 32, 16, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
+const int spriteEffH[] = { 
+    29, 32, 31, 29, 31, 31, 29, 31, 32, 32, 30, 
+    32, 32, 30, 24, 27, 30, 30, 32, 32, 32, 32, 
+    32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 30, 
+    29, 27, 25, 23, 22, 25, 27, 29, 27, 22, 22, 
+    22, 22, 16, 12
+};
+
+const int propbackW[] = {
+    24, 24, 24, 24, 24, 24, 72, 12, 12, 12, 12, 
+    12, 12, 12, 12, 12, 12
+};
+
+const int propbackH[] = {
+    32, 32, 32, 32, 32, 32, 16, 16,  8,  8,  8, 
+    8,  8,  8,  8,  8,  8
+};
 
 const unsigned char rgb332_3b_lut[] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff };
 const unsigned char rgb332_2b_lut[] = {0x00, 0x55, 0xaa, 0xff };
@@ -158,7 +175,7 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
     return 1;
 }
 
-int loadBlockData(const char *bigfile, unsigned char* backByte)
+int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
 {
     char* filename = malloc(256);
     sprintf(filename ,FILE_LOC "%s", bigfile);
@@ -190,8 +207,8 @@ int loadBlockData(const char *bigfile, unsigned char* backByte)
        }
     }
 
-    int levGround = (3072 - 2304) / 192;
-    int var13 = levGround * 192;
+    game->levGround = (3072 - 2304) / 192;
+    int var13 = game->levGround * 192;
     int var14 = 5760;
     var5 = 2304;
 
@@ -221,12 +238,8 @@ int loadSprites(GameState* game) {
             return 0;
             // Cleanup code
         }
-        printf("Memcpy %i -", i);
-        fflush(stdout);
         // Copy the pixel data into the surface
         memcpy(surface->pixels, &spriteData[propO], surface->pitch * surface->h);
-        printf("done\n");
-        fflush(stdout);
 
         SDL_Surface* surfaceRGBA = convert_rgb332_to_rgba8888(surface, 0);
         game->sprites[i] = SDL_CreateTextureFromSurface(game->renderer, surfaceRGBA);
@@ -240,7 +253,7 @@ int loadSprites(GameState* game) {
 }
 
 int loadBlocks(GameState* game, const char *filename){
-    if(!loadBlockData(filename, backByte_)){
+    if(!loadBlockData(game, filename, backByte_)){
         printf("Failed to load sprite data.");
         return 0;
     }

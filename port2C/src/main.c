@@ -5,10 +5,7 @@
 #include <stdlib.h>
 #include "game.h"
 #include "tileloader.h"
-
-#define SCREEN_WIDTH 176
-#define SCREEN_HEIGHT 208
-
+#include "draw.h"
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
     for (int i = 0; i < 6; i++) {
@@ -22,23 +19,30 @@ void initGame(GameState* game) {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     
-    game->window = SDL_CreateWindow("IcePlus", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                   SCREEN_WIDTH * 3, SCREEN_HEIGHT * 3, SDL_WINDOW_SHOWN);
-    game->renderer = SDL_CreateRenderer(game->window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_RenderSetLogicalSize(game->renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
-    printf("Loading Sprites - ");
-    fflush(stdout);
+    game->window = SDL_CreateWindow(
+        "IcePlus", 
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        SCREEN_WIDTH * SCREEN_SIZE, SCREEN_HEIGHT * SCREEN_SIZE
+        , SDL_WINDOW_SHOWN
+    );
+
+    game->renderer = SDL_CreateRenderer(
+        game->window,
+        -1,
+        SDL_RENDERER_ACCELERATED
+    );
+
     loadSprites(game);
-    printf("Done\n");
-    fflush(stdout);
+
     //loadSounds(game);
-    
-    // Initialize game objects
-    for (int i = 0; i < 10; i++) {
-        game->objs[i] = (IceObject){0};
-    }
+
+
+    game->level = 0;
     game->gameMode = 0;
     game->running = true;
+    game->foregoundTexture = drawNewTexture(game);
+
+    prepareLevel(game);
 }
 
 void handleInput(GameState* game) {
@@ -72,21 +76,23 @@ void updateGame(GameState* game) {
     if (game->lastKey == SDLK_UP) player->y--;
     if (game->lastKey == SDLK_DOWN) player->y++;
 }
+int test=7;
 
 void renderGame(GameState* game) {
-    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+    drawSetTarget(game, game->foregoundTexture);
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
-    
+    for(int i = 0; i<10; i++)
+        drawSpriteSimple(game, i);
+    if(test > BLOCK_COUNT) test=0;
+    drawBlockSimple(game, test, 100, 100);
+    drawResetTarget(game);
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
+    SDL_RenderClear(game->renderer);
     // Render objects
-
-            SDL_Rect dest = {40, 40, 24, 32};
-            SDL_RenderCopy(game->renderer, game->sprites[18], NULL, &dest);
-            dest.x = game->objs[0].x;
-            dest.y = game->objs[0].y;
-            SDL_RenderCopy(game->renderer, game->sprites[1], NULL, &dest);
-            dest.x = 40+24;
-            dest.y = 40+16;
-            SDL_RenderCopy(game->renderer, game->sprites[18], NULL, &dest);
+        SDL_Rect dest = {0, 0, SCREEN_WIDTH*SCREEN_SIZE, SCREEN_HEIGHT*SCREEN_SIZE};
+        //SDL_RenderCopy(game->renderer, game->backgoundTexture, NULL, &dest);
+        SDL_RenderCopy(game->renderer, game->foregoundTexture, NULL, &dest);
     
     SDL_RenderPresent(game->renderer);
 }
@@ -107,9 +113,12 @@ void cleanup(GameState* game) {
 int main(int argc, char* argv[]) {
     GameState game = {0};
     initGame(&game);
-    game.objs[0].x = 100;
-    game.objs[0].y = 100;
+    int c=0;
     while (game.running) {
+        if(c++>60){
+            //test++;
+            c=0;
+        }
         handleInput(&game);
         updateGame(&game);
         renderGame(&game);
