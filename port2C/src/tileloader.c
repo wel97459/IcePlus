@@ -136,11 +136,11 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
         return 0;
     }
 
-    for (int var1 = 0; var1 < 768; var1++) {
-        backByte[var1] = spriteData[var1 + 13008];
-        backByte[var1 + 768] = spriteData[var1 + 13008];
-        backByte[var1 + 1536] = spriteData[var1 + 18384];
-        backByte[var1 + 2304] = spriteData[var1 + 18384];
+    for (int i = 0; i < 768; i++) {
+        backByte[i] = spriteData[i + 13008];
+        backByte[i + 768] = spriteData[i + 13008];
+        backByte[i + 1536] = spriteData[i + 18384];
+        backByte[i + 2304] = spriteData[i + 18384];
     }
 
     unsigned char* bigiceshadow = malloc(256);
@@ -150,25 +150,24 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
         return 0;
     }
 
-    int var3 = 1152;
-    int var4 = 0;
+    int startOffset = 1152;
+    int var4 = 15;
 
     for (int var6 = 0; var6 < 16; var6++) {
         for (int var2 = 0; var2 < 8; var2++) {
-        backByte[var3++] = bigiceshadow[var4++];
+        backByte[startOffset++] = bigiceshadow[var4++];
         }
-
-        var3 += 16;
+        startOffset += 16;
     }
 
-    var3 += 1152;
+    startOffset += 1152;
 
     for (int var7 = 0; var7 < 16; var7++) {
         for (int var8 = 0; var8 < 8; var8++) {
-        backByte[var3++] = bigiceshadow[var4++];
+        backByte[startOffset++] = bigiceshadow[var4++];
         }
 
-        var3 += 16;
+        startOffset += 16;
     }
 
     free(bigiceshadow);
