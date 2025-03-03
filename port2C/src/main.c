@@ -43,6 +43,7 @@ void initGame(GameState* game) {
     game->foregoundTexture = drawNewTexture(game);
 
     prepareLevel(game);
+    prepareEnemies(game);
 }
 
 void handleInput(GameState* game) {
@@ -67,21 +68,45 @@ void handleInput(GameState* game) {
     }
 }
 
-void updateGame(GameState* game) {
-    // Add game logic here based on gameMode
-    // Example: Update player position based on lastKey
+void updateMainGame(GameState* game) {
     game->counter++;
-    updatePlayer(game,0);
+    preUpdate(game);
+    for (int i = 0; i < 10; i++)
+    {
+        switch(game->objs[i].type){
+            case 1:
+                updatePlayer(game,i);
+            break;
+            case 2:
+            case 3:
+                updateBlocks(game, i);
+            break;
+            case 4:
+            case 5:
+                updateBreakBlock(game, i);
+            break;
+            case 6:
+            case 7:
+                updateEnemies(game, i);
+            break;
+            case 8:
+                updateKillScore(game, i);
+            break;
+        }
+    }
+    void renderMainGame(game);
 }
 
-void renderGame(GameState* game) {
+void renderMainGame(GameState* game) {
     drawSetTarget(game, game->foregoundTexture);
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
 
-    drawSprite(game, 0);
-    // for(int i = 0; i < BLOCK_COUNT; i++)
-    //     drawBlockSimple(game, i, 10+((i & 0x07)*24)+(i==7 ? 54 : 0), 100+((i>>3)*32));
+    sortSprites(game);
+    for (int i = 0; i < game->sortN; i++)
+        drawSprite(game, game->sortIX[i]);
+    
+
     drawResetTarget(game);
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
@@ -109,16 +134,21 @@ void cleanup(GameState* game) {
 int main(int argc, char* argv[]) {
     GameState game = {0};
     initGame(&game);
-    int c=0;
+    game.gameMode = MainGameLoop;
     while (game.running) {
-        if(c++>60){
-            //test++;
-            c=0;
-        }
         handleInput(&game);
-        updateGame(&game);
-        renderGame(&game);
-        SDL_Delay(32);  // ~60 FPS
+        switch (game.gameMode)
+        {
+        case 3:
+
+        break;
+        
+        default:
+            break;
+        }
+        updateMainGame(&game);
+        renderMainGame(&game);
+        SDL_Delay(60);  // ~60 FPS
     }
     
     cleanup(&game);

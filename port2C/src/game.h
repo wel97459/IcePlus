@@ -10,6 +10,20 @@
 #define SPRITE_COUNT 48
 #define BLOCK_COUNT 17
 
+enum GAMEMODES {
+    NextMode,
+    SetupIntroScreen,
+    AnimateIntro,
+    PrepareGameLevel,
+    ToBlack,
+    ResetLevel,
+    MainGameLoop,
+    notsure,
+    GameOver,
+    HighScores,
+    Settings
+} GAMEMODES;
+
 typedef struct {
     int x, y;
     int look;
@@ -35,7 +49,8 @@ typedef struct {
     int map[168];
     int levGround;
     unsigned char ground[672];
-    int gameMode;
+    int enemies[4];
+    enum GAMEMODES gameMode;
     int counter;
     int lastKey;
     int running;
@@ -49,5 +64,11 @@ void prepareLevel(GameState* game);
 void buildMap(GameState* game, int* levelValues);
 void buildTiles(GameState* game);
 void sortSprites(GameState* game);
+void prepareEnemies(GameState* game);
+void preUpdate(GameState* game);
 void updatePlayer(GameState* game, int objNum);
+void updateBlocks(GameState* game, int objNum);
+void updateBreakBlock(GameState* game, int objNum);
+void updateEnemies(GameState* game, int objNum);
+void updateKillScore(GameState* game, int objNum);
 #endif
