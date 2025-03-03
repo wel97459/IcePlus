@@ -29,10 +29,14 @@ typedef struct {
     SDL_Texture* blocks[BLOCK_COUNT];
     Mix_Chunk* sounds[6];
     IceObject objs[10];
+    int sortN;
+    int sortY[10];
+    int sortIX[10];
     int map[168];
     int levGround;
     unsigned char ground[672];
     int gameMode;
+    int counter;
     int lastKey;
     int running;
     int level;
@@ -44,4 +48,6 @@ void clearObjs(GameState* game);
 void prepareLevel(GameState* game);
 void buildMap(GameState* game, int* levelValues);
 void buildTiles(GameState* game);
+void sortSprites(GameState* game);
+void updatePlayer(GameState* game, int objNum);
 #endif

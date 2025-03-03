@@ -70,29 +70,24 @@ void handleInput(GameState* game) {
 void updateGame(GameState* game) {
     // Add game logic here based on gameMode
     // Example: Update player position based on lastKey
-    IceObject* player = &game->objs[0];
-    if (game->lastKey == SDLK_LEFT) player->x--;
-    if (game->lastKey == SDLK_RIGHT) player->x++;
-    if (game->lastKey == SDLK_UP) player->y--;
-    if (game->lastKey == SDLK_DOWN) player->y++;
+    game->counter++;
+    updatePlayer(game,0);
 }
-int test=7;
 
 void renderGame(GameState* game) {
     drawSetTarget(game, game->foregoundTexture);
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
-    for(int i = 0; i<10; i++)
-        drawSpriteSimple(game, i);
-    if(test > BLOCK_COUNT) test=0;
-    for(int i = 0; i < BLOCK_COUNT; i++)
-        drawBlockSimple(game, i, 10+((i & 0x07)*24)+(i==7 ? 54 : 0), 100+((i>>3)*32));
+
+    drawSprite(game, 0);
+    // for(int i = 0; i < BLOCK_COUNT; i++)
+    //     drawBlockSimple(game, i, 10+((i & 0x07)*24)+(i==7 ? 54 : 0), 100+((i>>3)*32));
     drawResetTarget(game);
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
     // Render objects
         SDL_Rect dest = {0, 0, SCREEN_WIDTH*SCREEN_SIZE, SCREEN_HEIGHT*SCREEN_SIZE};
-        //SDL_RenderCopy(game->renderer, game->backgoundTexture, NULL, &dest);
+        SDL_RenderCopy(game->renderer, game->backgoundTexture, NULL, &dest);
         SDL_RenderCopy(game->renderer, game->foregoundTexture, NULL, &dest);
     
     SDL_RenderPresent(game->renderer);
@@ -123,7 +118,7 @@ int main(int argc, char* argv[]) {
         handleInput(&game);
         updateGame(&game);
         renderGame(&game);
-        SDL_Delay(16);  // ~60 FPS
+        SDL_Delay(32);  // ~60 FPS
     }
     
     cleanup(&game);

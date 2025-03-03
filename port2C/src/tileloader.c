@@ -19,12 +19,12 @@ const int spriteEffH[] = {
 };
 
 const int propbackW[] = {
-    24, 24, 24, 24, 24, 24, 72, 24, 24, 24, 24, 
-    24, 24, 24, 24, 24, 24
+    24, 24, 24, 24, 24, 24, 72, 12, 12, 12, 12, 
+    12, 12, 12, 12, 12, 12
 };
 
 const int propbackH[] = {
-    32, 32, 32, 32, 32, 32, 16, 16,  16,  16,  16, 
+    32, 32, 32, 32, 32, 32, 16, 8,  8,  8,  8, 
     8,  8,  8,  8,  8,  8
 };
 
@@ -142,8 +142,8 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
         backByte[i + 1536] = spriteData[i + 18384];
         backByte[i + 2304] = spriteData[i + 18384];
     }
-
-    unsigned char* bigiceshadow = malloc(256);
+    
+    unsigned char* bigiceshadow = malloc(257);
     if(!LoadData(FILE_LOC "bigiceshadow.raw", bigiceshadow)) {
         printf("Failed to load bigiceshadow.\n");
         free(bigiceshadow);
@@ -151,22 +151,21 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
     }
 
     int startOffset = 1152;
-    int var4 = 15;
+    int shadowIndex = 0;
 
-    for (int var6 = 0; var6 < 16; var6++) {
-        for (int var2 = 0; var2 < 8; var2++) {
-        backByte[startOffset++] = bigiceshadow[var4++];
+    for (int y = 0; y < 16; y++) {
+        for (int x = 0; x < 8; x++) {
+        backByte[startOffset++] = bigiceshadow[shadowIndex++];
         }
         startOffset += 16;
     }
 
     startOffset += 1152;
 
-    for (int var7 = 0; var7 < 16; var7++) {
-        for (int var8 = 0; var8 < 8; var8++) {
-        backByte[startOffset++] = bigiceshadow[var4++];
+    for (int y = 0; y < 16; y++) {
+        for (int x = 0; x < 8; x++) {
+            backByte[startOffset++] = bigiceshadow[shadowIndex++];
         }
-
         startOffset += 16;
     }
 
@@ -187,15 +186,19 @@ int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
     }
     free(filename);
 
+    //Copy soild block tiles
     for (int var2 = 0; var2 < 768; var2++) {
        backByte[var2 + 3072] = bigdirt[var2];
        backByte[var2 + 3840] = bigdirt[var2];
     }
 
+    //Copy solid black face with shadow
     for (int var9 = 0; var9 < 384; var9++) {
        backByte[var9 + 4224] = bigdirt[768 + var9];
     }
 
+
+    //Load top boarder tiles
     int indexBig = 4608;
 
     for (int var4 = 0; var4 < 16; var4++) {
@@ -207,12 +210,20 @@ int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
     }
 
     game->levGround = (fSize - 2304) / 192;
-    int goundOffset = game->levGround * 192;
     int index = 5760;
-    indexBig = 2304;
+    int index1 = 5760+96;
 
-    for (int var11 = 0; var11 < goundOffset; var11++) {
-        backByte[index++] = bigdirt[indexBig++];
+    indexBig = 2304;
+    for(int i = 0; i< game->levGround; i++){
+        for(int y = 0; y < 16; y++){
+            for (int x = 0; x < 12; x++) {
+                if((y & 0x01)) backByte[index1++] = bigdirt[indexBig];
+                if(!(y & 0x01)) backByte[index++] = bigdirt[indexBig];
+                indexBig++;
+            }
+        }
+        index1+=96;
+        index+=96;
     }
 
     free(bigdirt);
@@ -232,7 +243,7 @@ int loadSprites(GameState* game) {
     int propO = 0;
     for (int i = 0; i < SPRITE_COUNT; i++) {
         // Create the individual sprite surface
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 24, 32, 8, SDL_PIXELFORMAT_RGB332);
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 24, spriteH[i], 8, SDL_PIXELFORMAT_RGB332);
         if (!surface) {
             printf("Failed to create surface: %s\n", SDL_GetError());
             return 0;

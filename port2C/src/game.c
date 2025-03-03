@@ -7,6 +7,10 @@
 const unsigned char levIce[] = {12, 12, 13, 13, 14, 14, 16, 16, 12, 12, 12, 17, 17, 12, 12, 18, 18, 12, 12, 12};
 const unsigned char levRock[] = {7, 7, 7, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6};
 const int offsets[] = {0, -12, 12, -1, 1};
+const int motionKeys[] = {0, SDLK_UP, SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT};
+const int cyclic[] = {0, 1, 2, 1};
+const int pStepX[] = {3, 4, 3, 4, 3, 4, 3};
+const int pStepY[] = {2, 3, 2, 2, 3, 2, 2};
 
 const char levNames[10][24] = {
     "bigdirt.raw",
@@ -135,7 +139,7 @@ void buildMap(GameState* game, int* levelValues) {
         }
     }
 
-    game->map[167] = 6;
+    game->map[167] = 3;
 
     for (int i = 0; i < 168; i++) {
         game->map[i] = game->map[i] & 3;
@@ -168,21 +172,21 @@ void buildTiles(GameState* game) {
 
                 drawBlockSimple(game, tile, x * 24, 16 + y * 16);
             } else {
-                tile = 7 + game->ground[xy * 4];
+                tile = 7 + 2 * game->ground[xy * 4];
                 if (x > 0 && game->map[xy - 1] != 0) {
                     tile++;
                 }
 
                 drawBlockSimple(game, tile, x * 24, 32 + y * 16);
-                tile = 7 + game->ground[xy * 4 + 1];
+                tile = 7 + 2 * game->ground[xy * 4 + 1];
                 drawBlockSimple(game, tile, x * 24 + 12, 32 + y * 16);
-                tile = 7 + game->ground[xy * 4 + 2];
+                tile = 7 + 2 * game->ground[xy * 4 + 2];
                 if (x > 0 && game->map[xy - 1] != 0) {
                     tile++;
                 }
 
                 drawBlockSimple(game, tile, x * 24, 40 + y * 16);
-                tile = 7 + game->ground[xy * 4 + 3];
+                tile = 7 + 2 * game->ground[xy * 4 + 3];
                 drawBlockSimple(game, tile, x * 24 + 12, 40 + y * 16);
             }
         }
@@ -194,4 +198,86 @@ void buildTiles(GameState* game) {
     }
 
     drawResetTarget(game);
+}
+
+void sortSprites(GameState* game) {
+    game->sortN = 0;
+
+    for (int index = 0; index < 10; index++) {
+        if (game->objs[index].type > 0) {
+        game->sortY[game->sortN] = game->objs[index].y;
+        if (game->objs[index].type == 8) {
+            game->sortY[game->sortN] = game->sortY[game->sortN] + 100;
+        }
+
+        game->sortIX[game->sortN++] = index;
+        }
+    }
+
+    for (int i = 1; i < game->sortN; i++) {
+        for (int j = 0; j < i; j++) {
+            if (game->sortY[j] > game->sortY[i]) {
+                int sort = game->sortY[i];
+                game->sortY[i] = game->sortY[j];
+                game->sortY[j] = sort;
+                sort = game->sortIX[i];
+                game->sortIX[i] = game->sortIX[j];
+                game->sortIX[j] = sort;
+            }
+        }
+    }
+}
+
+void updatePlayer(GameState* game, int objNum){
+    IceObject* obj = &game->objs[objNum];
+
+    if (obj->x % 24 == 0 && (obj->y & 15) == 0) {
+        obj->step = 0;
+        obj->dir = 0;
+
+        for (int var28 = 1; var28 < 5; var28++) {
+            if (game->lastKey == motionKeys[var28]) {
+                int var31 = obj->pos + offsets[var28];
+                if (game->map[var31] == 0) {
+                    obj->dir = var28;
+                    obj->pos = obj->pos + offsets[var28];
+                } else if (game->map[var31] == 1 || game->map[var31] == 2) {
+                    if ((game->map[var31 + offsets[var28]] & 3) == 0) {
+                        //addObject(game, game->map[var31] + 1, var31, 11 + 7 * game->map[var31], var28);
+                        //game->map[var31] = 0;
+                        //removeBlock(var31);
+                    } else {
+                        // if (game->soundOn != 0) {
+                        //     game->playSound(1);
+                        // }
+
+                        //addObject(game, game->map[var31] + 3, var31, 11 + 7 * game->map[var31], 0);
+                        //game->map[var31] = 4;
+                        //game->removeBlock(var31);
+                    }
+
+                    obj->look = var28 * 3 - 1 + cyclic[(game->counter & 6) >> 1];
+                }
+            }
+        }
+    }
+
+    if (obj->dir > 0) {
+        switch (obj->dir) {
+            case 1:
+            obj->y = obj->y - pStepY[obj->step];
+            break;
+            case 2:
+            obj->y = obj->y + pStepY[obj->step];
+            break;
+            case 3:
+            obj->x = obj->x - pStepX[obj->step];
+            break;
+            case 4:
+            obj->x = obj->x + pStepX[obj->step];
+        }
+
+        obj->look = obj->dir * 3 - 1 + cyclic[(game->counter & 6) >> 1];
+        obj->step++;
+    }
 }

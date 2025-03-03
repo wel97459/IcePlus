@@ -6,6 +6,7 @@
 
 
 extern const int spriteH[];
+extern const int spriteEffH[];
 extern const int propbackW[];
 extern const int propbackH[];
 
