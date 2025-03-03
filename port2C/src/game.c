@@ -228,35 +228,40 @@ void sortSprites(GameState* game) {
     }
 }
 
+//2 - IceBlox
+//3 - IceBloxCoin
+
 void updatePlayer(GameState* game, int objNum){
     IceObject* obj = &game->objs[objNum];
+    int mapTile;
 
     if (obj->x % 24 == 0 && (obj->y & 15) == 0) {
         obj->step = 0;
         obj->dir = 0;
 
-        for (int var28 = 1; var28 < 5; var28++) {
-            if (game->lastKey == motionKeys[var28]) {
-                int var31 = obj->pos + offsets[var28];
-                if (game->map[var31] == 0) {
-                    obj->dir = var28;
-                    obj->pos = obj->pos + offsets[var28];
-                } else if (game->map[var31] == 1 || game->map[var31] == 2) {
-                    if ((game->map[var31 + offsets[var28]] & 3) == 0) {
-                        //addObject(game, game->map[var31] + 1, var31, 11 + 7 * game->map[var31], var28);
-                        //game->map[var31] = 0;
-                        //removeBlock(var31);
+        for (int dir = 1; dir < 5; dir++) {
+            if (game->lastKey == motionKeys[dir]) {
+                int mapDir = obj->pos + offsets[dir];
+                if (game->map[mapDir] == 0) {
+                    obj->dir = dir;
+                    obj->pos = obj->pos + offsets[dir];
+                } else if (game->map[mapDir] == 1 || game->map[mapDir] == 2) {
+                    if ((game->map[mapDir + offsets[dir]] & 3) == 0) {
+                        mapTile = game->map[mapDir] + 1;
+                        //addObject(game, game->map[mapDir] + 1, mapDir, 11 + 7 * game->map[mapDir], dir);
+                        //game->map[mapDir] = 0;
+                        //removeBlock(mapDir);
                     } else {
                         // if (game->soundOn != 0) {
                         //     game->playSound(1);
                         // }
-
-                        //addObject(game, game->map[var31] + 3, var31, 11 + 7 * game->map[var31], 0);
-                        //game->map[var31] = 4;
-                        //game->removeBlock(var31);
+                        mapTile = game->map[mapDir] + 3;
+                        //addObject(game, game->map[mapDir] + 3, mapDir, 11 + 7 * game->map[mapDir], 0);
+                        //game->map[mapDir] = 4;
+                        //game->removeBlock(mapDir);
                     }
 
-                    obj->look = var28 * 3 - 1 + cyclic[(game->counter & 6) >> 1];
+                    obj->look = dir * 3 - 1 + cyclic[(game->counter & 6) >> 1];
                 }
             }
         }
