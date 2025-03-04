@@ -6,6 +6,9 @@
 #include "game.h"
 #include "tileloader.h"
 #include "draw.h"
+
+const SDL_Rect ScreenSpace = {0, 0, SCREEN_WIDTH*SCREEN_SIZE, SCREEN_HEIGHT*SCREEN_SIZE};
+
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
     for (int i = 0; i < 6; i++) {
@@ -38,7 +41,7 @@ void initGame(GameState* game) {
 
 
     game->level = 0;
-    game->gameMode = 0;
+    game->gameMode = 3;
     game->running = true;
     game->foregoundTexture = drawNewTexture(game);
 
@@ -60,6 +63,7 @@ void handleInput(GameState* game) {
                 case SDLK_DOWN:  game->lastKey = SDLK_DOWN; break;
                 case SDLK_SPACE: game->lastKey = SDLK_SPACE; break;
             }
+            printf("key: %i\n", game->lastKey );
         }else if (e.type == SDL_KEYUP) {
             if (e.key.keysym.sym == game->lastKey) {
                 game->lastKey = 0;
@@ -74,27 +78,29 @@ void updateMainGame(GameState* game) {
     for (int i = 0; i < 10; i++)
     {
         switch(game->objs[i].type){
-            case 1:
+            case Player:
                 updatePlayer(game,i);
             break;
-            case 2:
-            case 3:
+            case IceBlock:
+            case IceBlockCoin:
                 updateBlocks(game, i);
             break;
-            case 4:
-            case 5:
+            case IceBlockBreak:
+            case IceBlockBreakCoin:
                 updateBreakBlock(game, i);
             break;
-            case 6:
-            case 7:
+            case EnemieFire:
+            case EnemieSpiningFire:
                 updateEnemies(game, i);
             break;
-            case 8:
+            case EnemieKillScore:
                 updateKillScore(game, i);
+            break;
+            case PlayerDied:
+                updatePlayerDied(game, i);
             break;
         }
     }
-    void renderMainGame(game);
 }
 
 void renderMainGame(GameState* game) {
@@ -110,12 +116,11 @@ void renderMainGame(GameState* game) {
     drawResetTarget(game);
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
+
     // Render objects
-        SDL_Rect dest = {0, 0, SCREEN_WIDTH*SCREEN_SIZE, SCREEN_HEIGHT*SCREEN_SIZE};
-        SDL_RenderCopy(game->renderer, game->backgoundTexture, NULL, &dest);
-        SDL_RenderCopy(game->renderer, game->foregoundTexture, NULL, &dest);
-    
-    SDL_RenderPresent(game->renderer);
+    SDL_RenderCopy(game->renderer, game->backgoundTexture, NULL, &ScreenSpace);
+    SDL_RenderCopy(game->renderer, game->foregoundTexture, NULL, &ScreenSpace);
+
 }
 
 void cleanup(GameState* game) {
@@ -134,20 +139,33 @@ void cleanup(GameState* game) {
 int main(int argc, char* argv[]) {
     GameState game = {0};
     initGame(&game);
-    game.gameMode = MainGameLoop;
     while (game.running) {
         handleInput(&game);
         switch (game.gameMode)
         {
-        case 3:
-
-        break;
-        
-        default:
+            case NextMode:
+            case SetupIntroScreen:
+            case AnimateIntro:
+            case PrepareGameLevel:
+                drawSetTarget(&game, game.foregoundTexture);
+                gameStart(&game);
+                drawResetTarget(&game);
+                SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
+            case ResetLevel:
+                drawToPlayField(&game);
+                drawResetTarget(&game);
+                SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
+            break;
+            case MainGameLoop:
+                updateMainGame(&game);
+                renderMainGame(&game);
+            break;
+            
+            default:
+                break;
         }
-        updateMainGame(&game);
-        renderMainGame(&game);
+        SDL_RenderPresent(game.renderer);
         SDL_Delay(60);  // ~60 FPS
     }
     

@@ -238,6 +238,18 @@ void sortSprites(GameState* game) {
     }
 }
 
+void startGame(GameState* game) {
+    game->gameMode = 3;
+    game->level = 0;
+    game->lives = 2;
+    game->score = 0;
+    //updateScore(0);
+    game->clipX = 80;
+    game->clipW = 16;
+    game->clipY = 100;
+    game->clipH = 8;
+    //buildShadows((byte)0);
+}
 
 void prepareEnemies(GameState* game) {
     IceObject* player = &game->objs[0];
@@ -262,10 +274,45 @@ void prepareEnemies(GameState* game) {
     while (var2 < 4) {
         game->enemies[var2++] = 0;
     }
-
-    for (size_t i = 0; i < 4; i++)
-        printf("enemie %i: %i\n", i , game->enemies[i]);
  }
+
+void gameStart(GameState* game){
+    
+    if(!drawToBlack(game)) return;
+
+    for (int i = 1; i < 10; i++) {
+        game->objs[i].type = NoObject;
+    }
+
+    game->gameMode = 5;
+    // this.gg.setColor(Color.white);
+    // this.LEVELTEXT[6] = (char)(48 + (this.level + 1) / 10 % 10);
+    // this.LEVELTEXT[7] = (char)(48 + (this.level + 1) % 10);
+    // this.gg.drawChars(this.LEVELTEXT, 0, 8, 88 - this.fm.charsWidth(this.LEVELTEXT, 0, 8) / 2, 50 + this.textDy);
+    game->counter = 0;
+    prepareEnemies(game);
+    int EnemyX = 31;
+    int e = 3;
+
+    for (game->objs[0].y = 105; game->enemies[e] == 0; e--) {
+        EnemyX += 15;
+    }
+
+    for (int var21 = 0; var21 < 4; var21++) {
+        game->objs[0].x = EnemyX;
+        EnemyX += 30;
+        if (game->enemies[var21] > 0) {
+        if (game->enemies[var21] == 6) {
+            game->objs[0].look = 15;
+        } else {
+            game->objs[0].look = 38;
+        }
+
+        drawSpriteSimple(game, 0);
+        }
+    }
+    
+}
 
 
 void preUpdate(GameState* game){
@@ -544,4 +591,28 @@ void updateKillScore(GameState* game, int objNum){
        obj->type = 0;
     }
     return;
+}
+
+void updatePlayerDied(GameState* game, int objNum){
+    IceObject* obj = &game->objs[objNum];
+    
+    if ((game->counter & 1) != 0 && obj->look < 37) {
+        obj->look++;
+    }
+
+    if (game->counter > 42) {
+        game->lives--;
+        if (game->lives >= 0) {
+            obj->look = 6;
+            obj->type = 1;
+            prepareEnemies(game);
+        } else {
+            // if (this.soundOn != 0) {
+            //     this.playSound(5);
+            // }
+
+            game->gameMode = 8;
+        }
+    }
+
 }

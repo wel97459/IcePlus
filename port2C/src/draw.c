@@ -4,13 +4,32 @@
 #include "tileloader.h"
 #include "draw.h"
 
-void setClip(GameState* game, int x, int y, int w, int h){
+void setClip(GameState* game, int x, int y, int w, int h)
+{
     SDL_Rect clip;
     clip.x = x;
     clip.y = y;
     clip.w = w;
     clip.h = h;
     SDL_RenderSetClipRect(game->renderer, &clip);
+}
+
+SDL_Texture* drawNewTexture(GameState* game){
+    SDL_Texture* tex;
+    // Create a new texture with the same properties as the one we are duplicating
+    tex = SDL_CreateTexture(game->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+    return tex;
+}
+
+void drawSetTarget(GameState* game, SDL_Texture* target){
+    // Save the current rendering target (will be NULL if it is the current window)
+    game->renderTarget = SDL_GetRenderTarget(game->renderer);
+    SDL_SetRenderTarget(game->renderer, target);
+}
+
+void drawResetTarget(GameState* game){
+    SDL_SetRenderTarget(game->renderer, game->renderTarget);
 }
 
 void drawImage(GameState* game, SDL_Texture* tex, int x, int y, int w, int h){
@@ -201,20 +220,38 @@ void drawBlockSimple(GameState* game, int look, int x, int y) {
     SDL_RenderCopy(game->renderer, game->blocks[look], NULL, &dest);
 }
 
-SDL_Texture* drawNewTexture(GameState* game){
-    SDL_Texture* tex;
-    // Create a new texture with the same properties as the one we are duplicating
-    tex = SDL_CreateTexture(game->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-    return tex;
+int drawToBlack(GameState* game){
+    SDL_Rect rect = {game->clipX, game->clipY, game->clipW, game->clipH};
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+    SDL_RenderDrawRect(game->renderer, &rect);
+
+    game->clipX -= 8;
+    game->clipY -= 10;
+    game->clipW += 16;
+    game->clipH += 20;
+    if (game->clipX >= 0)
+        return 0;
+
+    game->clipX = 80;
+    game->clipW = 16;
+    game->clipY = 100;
+    game->clipH = 8;
+
+    return 1;
 }
 
-void drawSetTarget(GameState* game, SDL_Texture* target){
-    // Save the current rendering target (will be NULL if it is the current window)
-    game->renderTarget = SDL_GetRenderTarget(game->renderer);
-    SDL_SetRenderTarget(game->renderer, target);
-}
 
-void drawResetTarget(GameState* game){
-    SDL_SetRenderTarget(game->renderer, game->renderTarget);
+void drawToPlayField(GameState* game){
+    drawSetTarget(game, game->foregoundTexture);
+    SDL_Rect rect = {game->clipX, game->clipY, game->clipW, game->clipH};
+
+    drawImage(game, game->backgoundTexture, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    game->clipX -= 8;
+    game->clipY -= 10;
+    game->clipW += 16;
+    game->clipH += 20;
+
+    if (game->clipX < 0) {
+        game->gameMode = 6;
+    }
 }

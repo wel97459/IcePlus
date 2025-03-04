@@ -10,7 +10,7 @@
 #define SPRITE_COUNT 48
 #define BLOCK_COUNT 17
 
-enum GAMEMODES {
+typedef enum GAMEMODES {
     NextMode,
     SetupIntroScreen,
     AnimateIntro,
@@ -22,12 +22,25 @@ enum GAMEMODES {
     GameOver,
     HighScores,
     Settings
-} GAMEMODES;
+} GameModes;
+
+typedef enum OBJTYPE {
+    NoObject,
+    Player,
+    IceBlock,
+    IceBlockCoin,
+    IceBlockBreak,
+    IceBlockBreakCoin,
+    EnemieFire,
+    EnemieSpiningFire,
+    EnemieKillScore,
+    PlayerDied,
+} ObjectTypes;
 
 typedef struct {
     int x, y;
     int look;
-    int type;
+    ObjectTypes type;
     int dir;
     int step;
     int pos;
@@ -50,12 +63,18 @@ typedef struct {
     int levGround;
     unsigned char ground[672];
     int enemies[4];
-    enum GAMEMODES gameMode;
+    GameModes gameMode;
     int counter;
     int lastKey;
     int running;
     int level;
     int coins;
+    int lives;
+    int score;
+    int clipX;
+    int clipY;
+    int clipW;
+    int clipH;
 } GameState;
 
 void addObject(GameState* game, int type, int pos, int look, int dir);
@@ -65,10 +84,12 @@ void buildMap(GameState* game, int* levelValues);
 void buildTiles(GameState* game);
 void sortSprites(GameState* game);
 void prepareEnemies(GameState* game);
+void gameStart(GameState* game);
 void preUpdate(GameState* game);
 void updatePlayer(GameState* game, int objNum);
 void updateBlocks(GameState* game, int objNum);
 void updateBreakBlock(GameState* game, int objNum);
 void updateEnemies(GameState* game, int objNum);
 void updateKillScore(GameState* game, int objNum);
+void updatePlayerDied(GameState* game, int objNum);
 #endif
