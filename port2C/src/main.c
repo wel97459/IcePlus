@@ -73,7 +73,6 @@ void handleInput(GameState* game) {
 }
 
 void updateMainGame(GameState* game) {
-    game->counter++;
     preUpdate(game);
     for (int i = 0; i < 10; i++)
     {
@@ -140,22 +139,36 @@ int main(int argc, char* argv[]) {
     GameState game = {0};
     initGame(&game);
     while (game.running) {
+        game.counter++;
         handleInput(&game);
         switch (game.gameMode)
         {
             case NextMode:
+                if (SDL_GetTicks() > game.nextTime) {
+                    game.gameMode = game.nextMode;
+                }
+            break;
             case SetupIntroScreen:
             case AnimateIntro:
             case PrepareGameLevel:
+                printf("PrepareGameLevel: %i\n", game.counter);
                 drawSetTarget(&game, game.foregoundTexture);
                 gameStart(&game);
                 drawResetTarget(&game);
                 SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
-            case ResetLevel:
+            case ToBlack:
+                printf("ToBlack: %i\n", game.counter);
                 drawToPlayField(&game);
                 drawResetTarget(&game);
                 SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
+            break;
+            case ResetLevel:
+                printf("ResetLevel: %i\n", game.counter);
+                if (game.counter > 12) {
+                    prepareLevel(&game);
+                    game.gameMode = 4;
+                }
             break;
             case MainGameLoop:
                 updateMainGame(&game);

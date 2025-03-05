@@ -64,6 +64,8 @@ typedef struct {
     unsigned char ground[672];
     int enemies[4];
     GameModes gameMode;
+    GameModes nextMode;
+    uint32_t nextTime;
     int counter;
     int lastKey;
     int running;

@@ -243,6 +243,8 @@ int drawToBlack(GameState* game){
 
 void drawToPlayField(GameState* game){
     drawSetTarget(game, game->foregoundTexture);
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
+    SDL_RenderClear(game->renderer);
     SDL_Rect rect = {game->clipX, game->clipY, game->clipW, game->clipH};
 
     drawImage(game, game->backgoundTexture, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
