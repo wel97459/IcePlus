@@ -9,6 +9,7 @@ extern const int spriteH[];
 extern const int spriteEffH[];
 extern const int propbackW[];
 extern const int propbackH[];
+extern const unsigned char shadowX[];
 
 size_t LoadData(char *filename, char *data);
 size_t GetFileSize(char *filename);

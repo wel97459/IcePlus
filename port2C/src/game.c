@@ -247,7 +247,7 @@ void startGame(GameState* game) {
     game->score = 0;
     //updateScore(0);
     resetGameClip(game);
-    //buildShadows((byte)0);
+    buildShadows(game, 0);
 }
 
 void prepareEnemies(GameState* game) {

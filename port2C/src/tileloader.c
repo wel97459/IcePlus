@@ -175,6 +175,27 @@ SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha)
     return dest;
 }
 
+SDL_Texture* createImage(GameState* game, unsigned char* data, int w, int h, int a){
+    SDL_Texture* tex;
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 8, SDL_PIXELFORMAT_RGB332);
+    if (!surface) {
+        printf("Failed to create surface: %s\n", SDL_GetError());
+        return NULL;
+        // Cleanup code
+    }
+
+    // Copy the pixel data into the surface
+    memcpy(surface->pixels, data, surface->pitch * surface->h);
+
+    SDL_Surface* surfaceRGBA = convert_rgb332_to_rgba8888(surface, a);
+    tex = SDL_CreateTextureFromSurface(game->renderer, surfaceRGBA);
+
+    // Cleanup the individual surface
+    SDL_FreeSurface(surface);
+    SDL_FreeSurface(surfaceRGBA);
+    return tex;
+}
+
 int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
 {
     if(!LoadData(FILE_LOC "sprites1.raw", &spriteData[0]) ||
@@ -245,7 +266,6 @@ int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
        backByte[var9 + 4224] = bigdirt[768 + var9];
     }
 
-
     //Load top boarder tiles
     int indexBig = 4608;
 
@@ -290,22 +310,7 @@ int loadSprites(GameState* game) {
 
     int propO = 0;
     for (int i = 0; i < SPRITE_COUNT; i++) {
-        // Create the individual sprite surface
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 24, spriteH[i], 8, SDL_PIXELFORMAT_RGB332);
-        if (!surface) {
-            printf("Failed to create surface: %s\n", SDL_GetError());
-            return 0;
-            // Cleanup code
-        }
-        // Copy the pixel data into the surface
-        memcpy(surface->pixels, &spriteData[propO], surface->pitch * surface->h);
-
-        SDL_Surface* surfaceRGBA = convert_rgb332_to_rgba8888(surface, 0);
-        game->sprites[i] = SDL_CreateTextureFromSurface(game->renderer, surfaceRGBA);
-
-        // Cleanup the individual surface
-        SDL_FreeSurface(surface);
-        SDL_FreeSurface(surfaceRGBA);
+        game->sprites[i] = createImage(game, &spriteData[propO], 24, spriteH[i], 0);
         propO += 24 * spriteH[i];
     }
     return 1;
@@ -319,29 +324,17 @@ int loadBlocks(GameState* game, const char *filename){
 
     int propO = 0;
     for (int i = 0; i < BLOCK_COUNT; i++) {
-        // Create the individual sprite surface
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, propbackW[i], propbackH[i], 8, SDL_PIXELFORMAT_RGB332);
-        if (!surface) {
-            printf("Failed to create surface: %s\n", SDL_GetError());
-            return 0;
-            // Cleanup code
-        }
-    
-        // Copy the pixel data into the surface
-        memcpy(surface->pixels, &backByte_[propO], surface->pitch * surface->h);
-    
-        SDL_Surface* surfaceRGBA = convert_rgb332_to_rgba8888(surface, 1);
-        game->blocks[i] = SDL_CreateTextureFromSurface(game->renderer, surfaceRGBA);
-
-        // Cleanup the individual surface
-        SDL_FreeSurface(surface);
-        SDL_FreeSurface(surfaceRGBA);
+        if (game->blocks[i] != NULL)
+            SDL_DestroyTexture(game->blocks[i]);
+        
+        game->blocks[i] = createImage(game, &backByte_[propO], propbackW[i], propbackH[i], 1);
         propO += propbackW[i] * propbackH[i];
     }
     return 1;
 }
 
-void buildShadows(int var1, unsigned char *shadByte) {
+void buildShadows(GameState* game, int var1) {
+    unsigned char* shadByte = (unsigned char*)malloc(1536);
     int index = 0;
     int var7 = 768;
     if (var1 == 0) {
@@ -370,5 +363,12 @@ void buildShadows(int var1, unsigned char *shadByte) {
           shadByte[i] = shadByte[i + 768];
           shadByte[i + 384] = shadByte[i + 1152];
        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (game->shadows[i] != NULL)
+            SDL_DestroyTexture(game->shadows[i]);
+    
+        game->shadows[i] = createImage(game, &shadByte[384 * i], 24, 16, 0);
     }
  }

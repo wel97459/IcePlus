@@ -272,3 +272,15 @@ void drawToPlayField(GameState* game){
         resetGameClip(game);
     }
 }
+
+void drawShadowSimple(GameState* game, int objNum) {
+    IceObject* obj = &game->objs[objNum];
+    int var2 = 0;
+    if (shadowX[obj->look] == 8) {
+       var2 = 2;
+    }
+
+    if (shadowX[obj->look] > 0) {
+       drawImage(game, game->shadows[var2], obj->x + shadowX[obj->look], obj->y - 16, 24, 16);
+    }
+ }

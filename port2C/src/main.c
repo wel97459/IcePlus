@@ -124,9 +124,17 @@ void cleanup(GameState* game) {
     for (int i = 0; i < SPRITE_COUNT; i++) {
         SDL_DestroyTexture(game->sprites[i]);
     }
+    for (int i = 0; i < BLOCK_COUNT; i++) {
+        SDL_DestroyTexture(game->blocks[i]);
+    }
+
     for (int i = 0; i < 6; i++) {
         Mix_FreeChunk(game->sounds[i]);
     }
+
+    SDL_DestroyTexture(game->foregoundTexture);
+    SDL_DestroyTexture(game->backgoundTexture);
+
     SDL_DestroyRenderer(game->renderer);
     SDL_DestroyWindow(game->window);
     Mix_CloseAudio();
@@ -185,9 +193,9 @@ int main(int argc, char* argv[]) {
                 }
             break;
             case GameOver:
-            //buildShadows((byte)12);
-            //prepareIntro();
-            game.gameMode = 6;
+                buildShadows(game, 12);
+                //prepareIntro();
+                game.gameMode = 6;
             break;
             default:
                 break;
