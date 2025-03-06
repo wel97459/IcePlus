@@ -75,6 +75,16 @@ int currentFloorRandom()
     return (rand() % 576);
 }
 
+void startSession(GameState* game) {
+    game->gameMode = PrepareGameLevel;
+    game->level = 0;
+    game->lives = 2;
+    game->score = 0;
+    //this.updateScore(0);
+    resetGameClip(game);
+    buildShadows(game, 0);
+ }
+
 void prepareLevel(GameState* game) {
     int levelValues[] = {0, 9, 5, 7};
     if (game->level < 20) {
@@ -616,3 +626,41 @@ void updatePlayerDied(GameState* game, int objNum){
     }
 
 }
+
+int gameOver(GameState* game){
+    //this.vPrint(88 - this.fm.stringWidth(this.VARIOUS[1]) / 2, 100, this.VARIOUS[1], Color.white);
+    if (game->counter <= 100) {
+       return 1;
+    }
+
+    if (game->level > game->maxLevel) {
+        game->maxLevel = game->level;
+    }
+
+    if (game->score > game->highscores[7]) {
+       //prepareHighscores();
+       return 1;
+    }
+
+    buildShadows(game, 12);
+    prepareIntro(game);
+    return 0;
+}
+
+void prepareIntro(GameState* game) {
+    // this.gg.setColor(Color.black);
+    // this.gg.fillRect(0, 0, 176, 10);
+    // this.gg.drawImage(this.logoIm, 0, 10, this);
+    // if (this.certified == 0) {
+    //    this.vPrint(0, 0, this.VARIOUS[2], Color.white);
+    // }
+
+    // for (int var2 = 0; var2 < 6; var2++) {
+    //    this.gg.drawImage(this.greenIm, var2 * 32, 68, this);
+    // }
+
+    game->gameMode = 0;
+    //this.adjustStrings();
+    game->counter = 0;
+    game->nextMode = 1;
+ }

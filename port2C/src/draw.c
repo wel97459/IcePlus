@@ -284,3 +284,69 @@ void drawShadowSimple(GameState* game, int objNum) {
        drawImage(game, game->shadows[var2], obj->x + shadowX[obj->look], obj->y - 16, 24, 16);
     }
  }
+
+void drawShadow(GameState* game, int objNum) {
+    IceObject* obj = &game->objs[objNum];
+    int var3 = 0;
+    if (shadowX[obj->look] == 0)
+        return; 
+
+    if (shadowX[obj->look] == 8) {
+        var3 = 2;
+    }
+
+    int var4 = obj->y + 32;
+    int var9 = obj->x + shadowX[obj->look];
+    if ((var9 + obj->y + game->counter & 1) > 0)
+        var3++;
+
+    int var6 = 24 - var9 % 24;
+    int var7 = var9 / 24 + 12 * (obj->y >> 4);
+    int var8 = var7 + 1;
+
+    int var2;
+    for (var2 = (obj->y & 240) + 16; var7 < 168 && (game->map[var7] & 3) == 0 && var2 < var4 + 16; var7 += 12) {
+        var2 += 16;
+    }
+
+    if (var2 > var4) {
+        var2 -= var4;
+
+        if (var2 > 16)
+            var2 = 16;
+
+        setClip(game, var9, var4, var6, var2);
+        drawImage(game, game->shadows[var3], var9, var4, 24, 16);
+    }
+
+    if (var6 != 24) {
+        int var5;
+        if ((game->map[var8] & 3) != 0) {
+            var5 = 16 - (obj->y & 15);
+        } else {
+            var5 = 0;
+        }
+
+        var2 = (obj->y & 240) + 32;
+
+        for (int var14 = var8 + 12; var14 < 168 && (game->map[var14] & 3) == 0 && var2 < var4 + 16; var14 += 12) {
+            var2 += 16;
+        }
+
+        if (var2 > var4 + var5) {
+            var2 -= var4;
+
+            if (var2 > 16) 
+                var2 = 16;
+            
+
+            var2 -= var5;
+            if (var2 > 0) {
+                setClip(game, var9 + var6, var4 + var5, 24 - var6, var2);
+                drawImage(game, game->shadows[var3], var9, var4, 24, 16);
+            }
+        }
+    }
+
+    SDL_RenderSetClipRect(game->renderer, NULL);
+}

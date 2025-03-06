@@ -74,9 +74,11 @@ typedef struct {
     int lastKey;
     int running;
     int level;
+    int maxLevel;
     int coins;
     int lives;
     int score;
+    int highscores[8];
     int clipX;
     int clipY;
     int clipW;
@@ -85,6 +87,7 @@ typedef struct {
 
 void addObject(GameState* game, int type, int pos, int look, int dir);
 void clearObjs(GameState* game);
+void startSession(GameState* game);
 void prepareLevel(GameState* game);
 void buildMap(GameState* game, int* levelValues);
 void buildTiles(GameState* game);
@@ -98,4 +101,6 @@ void updateBreakBlock(GameState* game, int objNum);
 void updateEnemies(GameState* game, int objNum);
 void updateKillScore(GameState* game, int objNum);
 void updatePlayerDied(GameState* game, int objNum);
+int gameOver(GameState* game);
+void prepareIntro(GameState* game);
 #endif

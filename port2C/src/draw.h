@@ -14,4 +14,6 @@
     void drawBlockSimple(GameState* game, int look, int x, int y);
     int drawToBlack(GameState* game);
     void drawToPlayField(GameState* game);
+    void drawShadowSimple(GameState* game, int objNum);
+    void drawShadow(GameState* game, int objNum);
 #endif

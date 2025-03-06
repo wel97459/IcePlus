@@ -38,13 +38,10 @@ void initGame(GameState* game) {
     //loadSounds(game);
 
 
-    game->level = 0;
-    game->gameMode = 3;
     game->running = true;
     game->foregoundTexture = drawNewTexture(game);
 
-    prepareLevel(game);
-    prepareEnemies(game);
+    startSession(game);
 }
 
 void handleInput(GameState* game) {
@@ -106,8 +103,10 @@ void renderMainGame(GameState* game) {
     SDL_RenderClear(game->renderer);
 
     sortSprites(game);
-    for (int i = 0; i < game->sortN; i++)
+    for (int i = 0; i < game->sortN; i++){
+        drawShadow(game, game->sortIX[i]);
         drawSprite(game, game->sortIX[i]);
+    }
     
 
     drawResetTarget(game);
@@ -193,9 +192,7 @@ int main(int argc, char* argv[]) {
                 }
             break;
             case GameOver:
-                buildShadows(game, 12);
-                //prepareIntro();
-                game.gameMode = 6;
+                gameOver(&game);
             break;
             default:
                 break;

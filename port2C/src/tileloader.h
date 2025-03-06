@@ -18,5 +18,6 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte);
 int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte);
 int loadSprites(GameState* game);
 int loadBlocks(GameState* game, const char *filename);
+void buildShadows(GameState* game, int var1);
 
 #endif
