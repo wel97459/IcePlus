@@ -7,8 +7,6 @@
 #include "tileloader.h"
 #include "draw.h"
 
-const SDL_Rect ScreenSpace = {0, 0, SCREEN_WIDTH*SCREEN_SIZE, SCREEN_HEIGHT*SCREEN_SIZE};
-
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
     for (int i = 0; i < 6; i++) {
@@ -63,7 +61,7 @@ void handleInput(GameState* game) {
                 case SDLK_DOWN:  game->lastKey = SDLK_DOWN; break;
                 case SDLK_SPACE: game->lastKey = SDLK_SPACE; break;
             }
-            printf("key: %i\n", game->lastKey );
+
         }else if (e.type == SDL_KEYUP) {
             if (e.key.keysym.sym == game->lastKey) {
                 game->lastKey = 0;
@@ -144,37 +142,52 @@ int main(int argc, char* argv[]) {
         switch (game.gameMode)
         {
             case NextMode:
-                if (SDL_GetTicks() > game.nextTime) {
+                if (game.counter > 50) {
                     game.gameMode = game.nextMode;
+                    game.counter = 0;
                 }
+                SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             case SetupIntroScreen:
             case AnimateIntro:
             case PrepareGameLevel:
-                printf("PrepareGameLevel: %i\n", game.counter);
-                drawSetTarget(&game, game.foregoundTexture);
+                //printf("PrepareGameLevel: %i\n", game.counter);
                 gameStart(&game);
-                drawResetTarget(&game);
                 SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             case ToBlack:
-                printf("ToBlack: %i\n", game.counter);
+                //printf("ToBlack: %i\n", game.counter);
                 drawToPlayField(&game);
-                drawResetTarget(&game);
-                SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
+                //game.gameMode = 6;
             break;
             case ResetLevel:
-                printf("ResetLevel: %i\n", game.counter);
+                //printf("ResetLevel: %i\n", game.counter);
                 if (game.counter > 12) {
                     prepareLevel(&game);
                     game.gameMode = 4;
+                    resetGameClip(&game);
+
                 }
             break;
             case MainGameLoop:
+                //printf("MainGameLoop: %i\n", game.counter);
                 updateMainGame(&game);
                 renderMainGame(&game);
             break;
-            
+            case FinshedLevel:
+                game.objs[0].look = (game.counter & 4) >> 2;
+                renderMainGame(&game);
+                if (game.counter > 50) {
+                    game.level++;
+                    resetGameClip(&game);
+                    game.gameMode = PrepareGameLevel;
+                }
+            break;
+            case GameOver:
+            //buildShadows((byte)12);
+            //prepareIntro();
+            game.gameMode = 6;
+            break;
             default:
                 break;
         }

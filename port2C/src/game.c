@@ -4,6 +4,8 @@
 #include "tileloader.h"
 #include "draw.h"
 
+const SDL_Rect ScreenSpace = {0, 0, SCREEN_WIDTH*SCREEN_SIZE, SCREEN_HEIGHT*SCREEN_SIZE};
+
 const unsigned char levIce[] = {12, 12, 13, 13, 14, 14, 16, 16, 12, 12, 12, 17, 17, 12, 12, 18, 18, 12, 12, 12};
 const unsigned char levRock[] = {7, 7, 7, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6};
 const int offsets[] = {0, -12, 12, -1, 1};
@@ -239,15 +241,12 @@ void sortSprites(GameState* game) {
 }
 
 void startGame(GameState* game) {
-    game->gameMode = 3;
+    game->gameMode = PrepareGameLevel;
     game->level = 0;
     game->lives = 2;
     game->score = 0;
     //updateScore(0);
-    game->clipX = 80;
-    game->clipW = 16;
-    game->clipY = 100;
-    game->clipH = 8;
+    resetGameClip(game);
     //buildShadows((byte)0);
 }
 
@@ -278,13 +277,16 @@ void prepareEnemies(GameState* game) {
 
 void gameStart(GameState* game){
     
-    if(!drawToBlack(game)) return;
+    if(drawToBlack(game)){
+        return;
+    }
 
     for (int i = 1; i < 10; i++) {
         game->objs[i].type = NoObject;
     }
 
-    game->gameMode = 5;
+    game->gameMode = NextMode;
+    game->nextMode = ResetLevel;
     // this.gg.setColor(Color.white);
     // this.LEVELTEXT[6] = (char)(48 + (this.level + 1) / 10 % 10);
     // this.LEVELTEXT[7] = (char)(48 + (this.level + 1) % 10);
@@ -297,7 +299,7 @@ void gameStart(GameState* game){
     for (game->objs[0].y = 105; game->enemies[e] == 0; e--) {
         EnemyX += 15;
     }
-
+    drawSetTarget(game, game->foregoundTexture);
     for (int var21 = 0; var21 < 4; var21++) {
         game->objs[0].x = EnemyX;
         EnemyX += 30;
@@ -337,14 +339,11 @@ void preUpdate(GameState* game){
         }
 
         if (newEnemiePos < 146) {
-            printf("Add enemie %i: %i\n", eCounter , game->enemies[eCounter]);
             addObject(game, game->enemies[eCounter], newEnemiePos, 0, dir);
             game->enemies[eCounter] = 0;
         }
     }
 }
-//2 - IceBlox
-//3 - IceBloxCoin
 
 void updatePlayer(GameState* game, int objNum){
     IceObject* obj = &game->objs[objNum];
@@ -451,11 +450,11 @@ void updateBlocks(GameState* game, int objNum){
 
             int var30 = 0;
 
-            // while (this.enemies[var30] > 0) {
-            //     var30++;
-            // }
+            while (game->enemies[var30] > 0) {
+                var30++;
+            }
 
-            // this.enemies[var30] = obj1->type;
+            game->enemies[var30] = obj1->type;
             obj1->type = 8;
             obj1->dir = 0;
         }

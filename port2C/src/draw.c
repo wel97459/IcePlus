@@ -3,6 +3,20 @@
 #include <SDL2/SDL.h>
 #include "tileloader.h"
 #include "draw.h"
+void IncrmentGameClip(GameState* game){
+    game->clipX -= 10;
+    game->clipY -= 9;
+    game->clipW += 20;
+    game->clipH += 17;
+}
+
+void resetGameClip(GameState* game)
+{
+    game->clipW = 50 * (SCREEN_WIDTH/SCREEN_HEIGHT);
+    game->clipX = (SCREEN_WIDTH>>1) - (game->clipW>>1);
+    game->clipH = 50;
+    game->clipY = (SCREEN_HEIGHT>>1) - (game->clipH>>1);
+}
 
 void setClip(GameState* game, int x, int y, int w, int h)
 {
@@ -221,21 +235,18 @@ void drawBlockSimple(GameState* game, int look, int x, int y) {
 }
 
 int drawToBlack(GameState* game){
+    if (game->clipX < 0){
+        printf("drawToBlack: X: %i, Y: %i, W: %i, H: %i\n", game->clipX, game->clipY, SCREEN_WIDTH - game->clipW , SCREEN_HEIGHT - game->clipH);
+        resetGameClip(game);
+        return 0;
+    }
+    
+    IncrmentGameClip(game);
+    drawSetTarget(game, game->foregoundTexture);
     SDL_Rect rect = {game->clipX, game->clipY, game->clipW, game->clipH};
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
-    SDL_RenderDrawRect(game->renderer, &rect);
-
-    game->clipX -= 8;
-    game->clipY -= 10;
-    game->clipW += 16;
-    game->clipH += 20;
-    if (game->clipX >= 0)
-        return 0;
-
-    game->clipX = 80;
-    game->clipW = 16;
-    game->clipY = 100;
-    game->clipH = 8;
+    SDL_RenderFillRect(game->renderer, &rect);
+    drawResetTarget(game);
 
     return 1;
 }
@@ -243,17 +254,20 @@ int drawToBlack(GameState* game){
 
 void drawToPlayField(GameState* game){
     drawSetTarget(game, game->foregoundTexture);
-    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
-    SDL_RenderClear(game->renderer);
-    SDL_Rect rect = {game->clipX, game->clipY, game->clipW, game->clipH};
+    // SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+    // SDL_RenderClear(game->renderer);
+    setClip(game, game->clipX, game->clipY, game->clipW, game->clipH);
 
     drawImage(game, game->backgoundTexture, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    game->clipX -= 8;
-    game->clipY -= 10;
-    game->clipW += 16;
-    game->clipH += 20;
+    SDL_RenderSetClipRect(game->renderer, NULL);
+    
+    drawResetTarget(game);
+    SDL_RenderCopy(game->renderer, game->foregoundTexture, NULL, &ScreenSpace);
+
+    IncrmentGameClip(game);
 
     if (game->clipX < 0) {
         game->gameMode = 6;
+        resetGameClip(game);
     }
 }

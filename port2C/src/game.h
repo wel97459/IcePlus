@@ -10,6 +10,8 @@
 #define SPRITE_COUNT 48
 #define BLOCK_COUNT 17
 
+extern const SDL_Rect ScreenSpace;
+
 typedef enum GAMEMODES {
     NextMode,
     SetupIntroScreen,
@@ -18,7 +20,7 @@ typedef enum GAMEMODES {
     ToBlack,
     ResetLevel,
     MainGameLoop,
-    notsure,
+    FinshedLevel,
     GameOver,
     HighScores,
     Settings

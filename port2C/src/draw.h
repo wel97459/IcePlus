@@ -1,5 +1,7 @@
 #ifndef DRAW_H
 #define DRAW_H
+    void IncrmentGameClip(GameState* game);
+    void resetGameClip(GameState* game);
     void setClip(GameState* game, int x, int y, int w, int h);
     SDL_Texture* drawNewTexture(GameState* game);
     void drawSetTarget(GameState* game, SDL_Texture* target);
