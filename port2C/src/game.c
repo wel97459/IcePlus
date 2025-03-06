@@ -313,6 +313,7 @@ void gameStart(GameState* game){
         drawSpriteSimple(game, 0);
         }
     }
+    drawResetTarget(game);
     
 }
 

@@ -9,6 +9,7 @@
 
 #define SPRITE_COUNT 48
 #define BLOCK_COUNT 17
+#define SHADOW_COUNT 4
 
 extern const SDL_Rect ScreenSpace;
 
@@ -56,6 +57,7 @@ typedef struct {
     SDL_Texture* foregoundTexture;
     SDL_Texture* sprites[SPRITE_COUNT];
     SDL_Texture* blocks[BLOCK_COUNT];
+    SDL_Texture* shadows[SHADOW_COUNT];
     Mix_Chunk* sounds[6];
     IceObject objs[10];
     int sortN;

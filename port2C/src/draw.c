@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include "tileloader.h"
 #include "draw.h"
+
 void IncrmentGameClip(GameState* game){
     game->clipX -= 10;
     game->clipY -= 9;

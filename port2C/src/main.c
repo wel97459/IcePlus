@@ -142,6 +142,7 @@ int main(int argc, char* argv[]) {
         switch (game.gameMode)
         {
             case NextMode:
+                printf("Waiting %i\n", game.counter);
                 if (game.counter > 50) {
                     game.gameMode = game.nextMode;
                     game.counter = 0;
@@ -151,17 +152,17 @@ int main(int argc, char* argv[]) {
             case SetupIntroScreen:
             case AnimateIntro:
             case PrepareGameLevel:
-                //printf("PrepareGameLevel: %i\n", game.counter);
+                printf("PrepareGameLevel: %i\n", game.counter);
                 gameStart(&game);
                 SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             case ToBlack:
-                //printf("ToBlack: %i\n", game.counter);
+                printf("ToBlack: %i\n", game.counter);
                 drawToPlayField(&game);
                 //game.gameMode = 6;
             break;
             case ResetLevel:
-                //printf("ResetLevel: %i\n", game.counter);
+                printf("ResetLevel: %i\n", game.counter);
                 if (game.counter > 12) {
                     prepareLevel(&game);
                     game.gameMode = 4;
@@ -170,7 +171,7 @@ int main(int argc, char* argv[]) {
                 }
             break;
             case MainGameLoop:
-                //printf("MainGameLoop: %i\n", game.counter);
+                printf("MainGameLoop: %i\n", game.counter);
                 updateMainGame(&game);
                 renderMainGame(&game);
             break;
