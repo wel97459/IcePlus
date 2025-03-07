@@ -22,5 +22,5 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
     SDL2::SDL2
     SDL2_mixer::SDL2_mixer
-    SDL2_tff::SDL2_tff
+    SDL2_ttf::SDL2_ttf
 )
