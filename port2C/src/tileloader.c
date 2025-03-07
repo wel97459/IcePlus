@@ -372,3 +372,24 @@ void buildShadows(GameState* game, int var1) {
         game->shadows[i] = createImage(game, &shadByte[384 * i], 24, 16, 0);
     }
  }
+
+void loadLogo(GameState* game){
+    size_t fSize = GetFileSize(FILE_LOC "logo.raw");
+    unsigned char* logo = malloc(fSize);
+    if(!LoadData(FILE_LOC "logo.raw", logo)){
+        free(logo);
+        return 0; 
+    }
+
+    game->logo = createImage(game, logo, 176, 58, 1);
+}
+
+void buildGreenBG(GameState* game){
+    unsigned char* green = malloc(4480);
+    
+    for (int i = 0; i < 4480; i++) {
+        green[i] = -16777216 + (i / 22 << 8);
+    }
+
+    game->greenBG = createImage(game, green, 32, 140, 1);
+}

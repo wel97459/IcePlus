@@ -19,5 +19,6 @@ int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
 int loadSprites(GameState* game);
 int loadBlocks(GameState* game, const char *filename);
 void buildShadows(GameState* game, int var1);
-
+void loadLogo(GameState* game);
+void buildGreenBG(GameState* game);
 #endif

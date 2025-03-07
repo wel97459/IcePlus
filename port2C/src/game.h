@@ -58,6 +58,8 @@ typedef struct {
     SDL_Texture* sprites[SPRITE_COUNT];
     SDL_Texture* blocks[BLOCK_COUNT];
     SDL_Texture* shadows[SHADOW_COUNT];
+    SDL_Texture* logo;
+    SDL_Texture* greenBG;
     Mix_Chunk* sounds[6];
     IceObject objs[10];
     int sortN;

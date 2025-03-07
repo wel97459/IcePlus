@@ -34,9 +34,9 @@ void initGame(GameState* game) {
     );
 
     loadSprites(game);
-
+    loadLogo(game);
+    buildGreenBG(game);
     //loadSounds(game);
-
 
     game->running = true;
     game->foregoundTexture = drawNewTexture(game);
@@ -131,6 +131,7 @@ void cleanup(GameState* game) {
         Mix_FreeChunk(game->sounds[i]);
     }
 
+    SDL_DestroyTexture(game->logo);
     SDL_DestroyTexture(game->foregoundTexture);
     SDL_DestroyTexture(game->backgoundTexture);
 
