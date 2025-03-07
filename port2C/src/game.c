@@ -37,6 +37,14 @@ const char levNames[10][24] = {
     "bigbooks.raw"
 };
 
+
+void playSound(GameState* game, int sound)
+{
+    //if (game->soundOn != 0) {
+    Mix_PlayChannel(-1, game->sounds[sound], 0);
+    //}
+}
+
 void addObject(GameState* game, int type, int pos, int look, int dir) 
 {
     int i = 0;
@@ -83,7 +91,8 @@ void startSession(GameState* game) {
     //this.updateScore(0);
     resetGameClip(game);
     buildShadows(game, 0);
- }
+    prepareIntro(game);
+}
 
 void prepareLevel(GameState* game) {
     int levelValues[] = {0, 9, 5, 7};
@@ -257,7 +266,7 @@ void startGame(GameState* game) {
     game->score = 0;
     //updateScore(0);
     resetGameClip(game);
-    buildShadows(game, 0);
+    buildShadows(game, 12);
 }
 
 void prepareEnemies(GameState* game) {
@@ -377,9 +386,7 @@ void updatePlayer(GameState* game, int objNum){
                         game->map[mapDir] = 0;
                         removeBlock(game, mapDir);
                     } else {
-                        // if (game->soundOn != 0) {
-                        //     game->playSound(1);
-                        // }
+                        playSound(game, 1);
                         mapTile = game->map[mapDir] + 3;
                         addObject(game, mapTile, mapDir, 11 + 7 * game->map[mapDir], 0);
                         game->map[mapDir] = 4;
@@ -448,7 +455,7 @@ void updateBlocks(GameState* game, int objNum){
            && obj1->y < obj->y + 12) 
         {
         //    if (this.soundOn != 0) {
-        //       this.playSound(0);
+        playSound(game, 0);
         //    }
 
             if (obj1->type == 6) {
@@ -484,7 +491,7 @@ void updateBreakBlock(GameState* game, int objNum){
     game->map[obj->pos] = 0;
     if (obj->type == 5) {
     //    if (this.soundOn != 0) {
-    //       this.playSound(2);
+        playSound(game, 2);
     //    }
 
         game->coins++;
@@ -574,7 +581,7 @@ void updateEnemies(GameState* game, int objNum){
         }
 
         // if (this.soundOn != 0) {
-        // this.playSound(3);
+        playSound(game, 3);
         // }
 
         player->type = 9;
@@ -618,7 +625,7 @@ void updatePlayerDied(GameState* game, int objNum){
             prepareEnemies(game);
         } else {
             // if (this.soundOn != 0) {
-            //     this.playSound(5);
+            playSound(game, 5);
             // }
 
             game->gameMode = 8;
@@ -648,16 +655,22 @@ int gameOver(GameState* game){
 }
 
 void prepareIntro(GameState* game) {
-    // this.gg.setColor(Color.black);
-    // this.gg.fillRect(0, 0, 176, 10);
-    // this.gg.drawImage(this.logoIm, 0, 10, this);
+    drawSetTarget(game, game->foregoundTexture);
+
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
+    SDL_RenderClear(game->renderer);
+
+    for (int i = 0; i < SCREEN_HEIGHT; i++) {
+        SDL_SetRenderDrawColor(game->renderer, 0, i>>1, 0,255);
+        SDL_RenderDrawLine(game->renderer, 0,i,SCREEN_WIDTH,i);
+    }
+
+    drawImageXY(game, game->logo, (SCREEN_WIDTH>>1) - (176>>1) , 10);
     // if (this.certified == 0) {
     //    this.vPrint(0, 0, this.VARIOUS[2], Color.white);
     // }
 
-    // for (int var2 = 0; var2 < 6; var2++) {
-    //    this.gg.drawImage(this.greenIm, var2 * 32, 68, this);
-    // }
+    drawResetTarget(game);
 
     game->gameMode = 0;
     //this.adjustStrings();

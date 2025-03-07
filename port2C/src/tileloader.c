@@ -333,11 +333,11 @@ int loadBlocks(GameState* game, const char *filename){
     return 1;
 }
 
-void buildShadows(GameState* game, int var1) {
+void buildShadows(GameState* game, int color) {
     unsigned char* shadByte = (unsigned char*)malloc(1536);
     int index = 0;
     int var7 = 768;
-    if (var1 == 0) {
+    if (color == 0) {
        for (int i = 0; i < 2; i++) {
           for (int y = 0; y < 16; y++) {
              int locIndex = index;
@@ -354,7 +354,7 @@ void buildShadows(GameState* game, int var1) {
        }
     } else {
        for (int i = 0; i < 768; i++) {
-          shadByte[768 + i] = var1;
+          shadByte[768 + i] = color;
        }
     }
 
@@ -378,18 +378,19 @@ void loadLogo(GameState* game){
     unsigned char* logo = malloc(fSize);
     if(!LoadData(FILE_LOC "logo.raw", logo)){
         free(logo);
-        return 0; 
+        return; 
     }
 
-    game->logo = createImage(game, logo, 176, 58, 1);
+    game->logo = createImage(game, logo, 176, 58, 0);
 }
 
 void buildGreenBG(GameState* game){
-    unsigned char* green = malloc(4480);
-    
+    int8_t* green = malloc(4480*sizeof(int8_t));
+
     for (int i = 0; i < 4480; i++) {
         green[i] = -16777216 + (i / 22 << 8);
     }
 
-    game->greenBG = createImage(game, green, 32, 140, 1);
+    game->greenBG = createImage(game, (unsigned char*)green, 32, 140, 0);
+    free(green);
 }

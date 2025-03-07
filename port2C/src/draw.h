@@ -7,6 +7,7 @@
     void drawSetTarget(GameState* game, SDL_Texture* target);
     void drawResetTarget(GameState* game);
     void drawImage(GameState* game, SDL_Texture* tex, int x, int y, int w, int h);
+    void drawImageXY(GameState* game, SDL_Texture* tex, int x, int y);
     void drawSpriteSimple(GameState* game, int objNum);
     void drawSprite(GameState* game, int objNum);
     void addBlock(GameState* game, int pos, int look);

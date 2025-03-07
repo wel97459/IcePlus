@@ -9,6 +9,14 @@ void IncrmentGameClip(GameState* game){
     game->clipY -= 9;
     game->clipW += 20;
     game->clipH += 17;
+    if (game->clipX < 0)
+    {
+        game->clipX = -1;
+        game->clipY = -1;
+        game->clipW = SCREEN_WIDTH+1;
+        game->clipH = SCREEN_HEIGHT+1;
+    }
+    
 }
 
 void resetGameClip(GameState* game)
@@ -53,6 +61,14 @@ void drawImage(GameState* game, SDL_Texture* tex, int x, int y, int w, int h){
     dest.y = y;
     dest.w = w;
     dest.h = h;
+    SDL_RenderCopy(game->renderer, tex, NULL, &dest);
+}
+
+void drawImageXY(GameState* game, SDL_Texture* tex, int x, int y){
+    SDL_Rect dest;
+    dest.x = x;
+    dest.y = y;
+    SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
     SDL_RenderCopy(game->renderer, tex, NULL, &dest);
 }
 
@@ -237,7 +253,6 @@ void drawBlockSimple(GameState* game, int look, int x, int y) {
 
 int drawToBlack(GameState* game){
     if (game->clipX < 0){
-        printf("drawToBlack: X: %i, Y: %i, W: %i, H: %i\n", game->clipX, game->clipY, SCREEN_WIDTH - game->clipW , SCREEN_HEIGHT - game->clipH);
         resetGameClip(game);
         return 0;
     }

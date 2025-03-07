@@ -87,6 +87,7 @@ typedef struct {
     int clipH;
 } GameState;
 
+void playSound(GameState* game, int sound);
 void addObject(GameState* game, int type, int pos, int look, int dir);
 void clearObjs(GameState* game);
 void startSession(GameState* game);
