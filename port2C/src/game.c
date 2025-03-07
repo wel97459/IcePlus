@@ -24,7 +24,28 @@ const int rStepY[] = {2, 2, 2, 2, 2, 2, 2, 2};
 const int levFl1[] = {1, 2, 2, 3, 3, 1, 1, 2, 2, 4, 4, 1, 1, 2, 2, 0, 0, 1, 1, 0};
 const int levFl2[] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 2, 2, 2, 2, 3, 3, 3, 3, 4};
 
-const char* Intro_text[] = {"Written and designed", "By Karl Hornell", "(c) OnGame, 2002"};
+const char* Intro_text[] = {"Written and designed", "By Karl Hornell", "Ported to C/SDL2 By Winston Lowe"};
+
+const char* Help_text[] = {
+    "You control Pixel",
+    "Pete, the penguin.",
+    "Move ice blocks by",
+    "walking against them",
+    "or crush them",
+    "against other blocks.",
+    "Watch out for",
+    "the flames.",
+    "You can snuff",
+    "them with ice.",
+    "Collect all five",
+    "golden coins ...",
+    "... to get to",
+    "the next level."
+ };
+
+ const char* Menu_text[] = {"Play", "Settings", "Exit", "Start on level", "Sound", "Back", "OFF", "ON"};
+ const char* Level_text = "Level %01i";
+ const char* Various_text[] = {"Highscores", "GAME OVER", "DEMO"};
 
 const char levNames[10][24] = {
     "bigdirt.raw",
@@ -47,7 +68,7 @@ void playSound(GameState* game, int sound)
     //}
 }
 
-void addObject(GameState* game, int type, int pos, int look, int dir) 
+int addObject(GameState* game, int type, int pos, int look, int dir) 
 {
     int i = 0;
 
@@ -63,6 +84,8 @@ void addObject(GameState* game, int type, int pos, int look, int dir)
     obj->x = pos % 12 * 24;
     obj->y = pos / 12 << 4;
     obj->step = 0;
+
+    return i;
 }
 
 void clearObjs(GameState* game){
@@ -307,15 +330,13 @@ void gameStart(GameState* game){
 
     game->gameMode = NextMode;
     game->nextMode = ResetLevel;
-    // this.gg.setColor(Color.white);
-    // this.LEVELTEXT[6] = (char)(48 + (this.level + 1) / 10 % 10);
-    // this.LEVELTEXT[7] = (char)(48 + (this.level + 1) % 10);
-    // this.gg.drawChars(this.LEVELTEXT, 0, 8, 88 - this.fm.charsWidth(this.LEVELTEXT, 0, 8) / 2, 50 + this.textDy);
+
     game->counter = 0;
     prepareEnemies(game);
     int EnemyX = SCREEN_WIDTH/2;
     
     game->objs[0].y = 105;
+    game->objs[0].type = 6;
     for (int e = 0; e < 4; e++) {
         if (game->enemies[e] != 0)
         {
@@ -324,19 +345,26 @@ void gameStart(GameState* game){
     }
 
     drawSetTarget(game, game->foregoundTexture);
-    for (int var21 = 0; var21 < 4; var21++) {
+
+    for (int e = 0; e < 4; e++) {
         game->objs[0].x = EnemyX;
         EnemyX += 30;
-        if (game->enemies[var21] > 0) {
-        if (game->enemies[var21] == 6) {
-            game->objs[0].look = 15;
-        } else {
-            game->objs[0].look = 38;
-        }
+        if (game->enemies[e] > 0) {
+            printf("e: %i\n", game->enemies[e]);
+            if (game->enemies[e] == 6) {
+                game->objs[0].look = 15;
+            } else {
+                game->objs[0].look = 38;
+            }
 
-        drawSpriteSimple(game, 0);
+            drawSpriteSimple(game, 0);
         }
     }
+
+    char lvlText[64];
+    sprintf(lvlText, Level_text, game->level+1); 
+    vPrintCenter(game, SCREEN_WIDTH/2, 50,(const char*) lvlText);
+
     drawResetTarget(game);
     
 }
@@ -344,16 +372,21 @@ void gameStart(GameState* game){
 
 void preUpdate(GameState* game){
     IceObject* player = &game->objs[0];
-
+    if(game->respawnWait > 0){
+        game->respawnWait--;
+        return;
+    }
+    
     int eCounter = game->counter % 3;
+
     if (game->enemies[eCounter] > 0) {
         int newEnemiePos;
         int dir;
         if (player->x < 144) {
-            newEnemiePos = 23;
+            newEnemiePos = 22;
             dir = 3;
         } else {
-            newEnemiePos = 12;
+            newEnemiePos = 13;
             dir = 4;
         }
 
@@ -366,6 +399,7 @@ void preUpdate(GameState* game){
         if (newEnemiePos < 146) {
             addObject(game, game->enemies[eCounter], newEnemiePos, 0, dir);
             game->enemies[eCounter] = 0;
+            game->respawnWait = (rand()%20)+10;
         }
     }
 }
@@ -480,6 +514,7 @@ void updateBlocks(GameState* game, int objNum){
             game->enemies[var30] = obj1->type;
             obj1->type = 8;
             obj1->dir = 0;
+            game->respawnWait = (rand()%20)+10;
         }
     }
 }
@@ -640,7 +675,7 @@ void updatePlayerDied(GameState* game, int objNum){
 }
 
 int gameOver(GameState* game){
-    //this.vPrint(88 - this.fm.stringWidth(this.VARIOUS[1]) / 2, 100, this.VARIOUS[1], Color.white);
+    vPrintCenter(game, SCREEN_WIDTH/2, 100, Various_text[1]);
     if (game->counter <= 100) {
        return 1;
     }

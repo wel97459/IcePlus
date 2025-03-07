@@ -75,8 +75,8 @@ void drawImageXY(GameState* game, SDL_Texture* tex, int x, int y){
 void drawSpriteSimple(GameState* game, int objNum) {
     IceObject* obj = &game->objs[objNum];
     if(obj->type == 0) return;
-    
     SDL_Rect dest = {obj->x, obj->y - spriteH[obj->look], 24, 32};
+    SDL_QueryTexture(game->sprites[obj->look], NULL, NULL, &dest.w, &dest.h);
     SDL_RenderCopy(game->renderer, game->sprites[obj->look], NULL, &dest);
 }
 
@@ -377,7 +377,8 @@ SDL_Rect vPrint(GameState* game, int x, int y, const char* text){
 
     SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, White); 
     SDL_Texture* TextWhite = SDL_CreateTextureFromSurface(game->renderer, surfaceTextWhite);
-    SDL_QueryTexture(TextWhite, NULL, NULL, &pos.w, &pos.h);
+    pos.w = surfaceTextWhite->w;
+    pos.h = surfaceTextWhite->h;
 
     drawImageXY(game, TextBlack, x+1, y+1);
     drawImageXY(game, TextWhite, x, y);
@@ -400,7 +401,8 @@ SDL_Rect vPrintCenter(GameState* game, int x, int y, const char* text){
 
     SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, White); 
     SDL_Texture* TextWhite = SDL_CreateTextureFromSurface(game->renderer, surfaceTextWhite);
-    SDL_QueryTexture(TextWhite, NULL, NULL, &pos.w, &pos.h);
+    pos.w = surfaceTextWhite->w;
+    pos.h = surfaceTextWhite->h;
 
     drawImageXY(game, TextBlack, (x+1) - (pos.w/2), y+1);
     drawImageXY(game, TextWhite, x - (pos.w/2), y);
@@ -409,5 +411,17 @@ SDL_Rect vPrintCenter(GameState* game, int x, int y, const char* text){
     SDL_FreeSurface(surfaceTextWhite);
     SDL_DestroyTexture(TextBlack);
     SDL_DestroyTexture(TextWhite);
+    return pos;
+}
+
+SDL_Rect GetPrintSize(GameState* game, const char* text){
+    SDL_Rect pos;
+    pos.x = 0;
+    pos.y = 0;
+    SDL_Color Black = {0, 0, 0};
+    SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, Black); 
+    pos.w = surfaceTextWhite->w;
+    pos.h = surfaceTextWhite->h;
+    SDL_FreeSurface(surfaceTextWhite);
     return pos;
 }

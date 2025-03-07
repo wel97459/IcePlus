@@ -71,6 +71,7 @@ typedef struct {
     int levGround;
     unsigned char ground[672];
     int enemies[4];
+    int respawnWait;
     GameModes gameMode;
     GameModes nextMode;
     uint32_t nextTime;
@@ -90,7 +91,7 @@ typedef struct {
 } GameState;
 
 void playSound(GameState* game, int sound);
-void addObject(GameState* game, int type, int pos, int look, int dir);
+int addObject(GameState* game, int type, int pos, int look, int dir);
 void clearObjs(GameState* game);
 void startSession(GameState* game);
 void prepareLevel(GameState* game);
