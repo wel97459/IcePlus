@@ -24,6 +24,8 @@ const int rStepY[] = {2, 2, 2, 2, 2, 2, 2, 2};
 const int levFl1[] = {1, 2, 2, 3, 3, 1, 1, 2, 2, 4, 4, 1, 1, 2, 2, 0, 0, 1, 1, 0};
 const int levFl2[] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 2, 2, 2, 2, 3, 3, 3, 3, 4};
 
+const char* Intro_text[] = {"Written and designed", "By Karl Hornell", "(c) OnGame, 2002"};
+
 const char levNames[10][24] = {
     "bigdirt.raw",
     "biglego.raw",
@@ -270,7 +272,6 @@ void startGame(GameState* game) {
 }
 
 void prepareEnemies(GameState* game) {
-    IceObject* player = &game->objs[0];
     int var1 = 0;
     int var2 = 0;
     int lvl;
@@ -312,12 +313,16 @@ void gameStart(GameState* game){
     // this.gg.drawChars(this.LEVELTEXT, 0, 8, 88 - this.fm.charsWidth(this.LEVELTEXT, 0, 8) / 2, 50 + this.textDy);
     game->counter = 0;
     prepareEnemies(game);
-    int EnemyX = 31;
-    int e = 3;
-
-    for (game->objs[0].y = 105; game->enemies[e] == 0; e--) {
-        EnemyX += 15;
+    int EnemyX = SCREEN_WIDTH/2;
+    
+    game->objs[0].y = 105;
+    for (int e = 0; e < 4; e++) {
+        if (game->enemies[e] != 0)
+        {
+            EnemyX -= 15;
+        }        
     }
+
     drawSetTarget(game, game->foregoundTexture);
     for (int var21 = 0; var21 < 4; var21++) {
         game->objs[0].x = EnemyX;
@@ -666,9 +671,10 @@ void prepareIntro(GameState* game) {
     }
 
     drawImageXY(game, game->logo, (SCREEN_WIDTH>>1) - (176>>1) , 10);
-    // if (this.certified == 0) {
-    //    this.vPrint(0, 0, this.VARIOUS[2], Color.white);
-    // }
+
+    SDL_Rect pos = vPrintCenter(game, SCREEN_WIDTH/2, 100, Intro_text[0]);
+    pos = vPrintCenter(game, SCREEN_WIDTH/2, pos.y+pos.h, Intro_text[1]);
+    pos = vPrintCenter(game, SCREEN_WIDTH/2, pos.y+pos.h, Intro_text[2]);
 
     drawResetTarget(game);
 

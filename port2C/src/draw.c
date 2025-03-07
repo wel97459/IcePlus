@@ -365,3 +365,49 @@ void drawShadow(GameState* game, int objNum) {
 
     SDL_RenderSetClipRect(game->renderer, NULL);
 }
+
+SDL_Rect vPrint(GameState* game, int x, int y, const char* text){
+    SDL_Rect pos;
+    pos.x = x;
+    pos.y = y;
+    SDL_Color Black = {0, 0, 0};
+    SDL_Color White = {255, 255, 255};
+    SDL_Surface* surfaceTextBlack = TTF_RenderText_Solid(game->font, text, Black);
+    SDL_Texture* TextBlack = SDL_CreateTextureFromSurface(game->renderer, surfaceTextBlack);
+
+    SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, White); 
+    SDL_Texture* TextWhite = SDL_CreateTextureFromSurface(game->renderer, surfaceTextWhite);
+    SDL_QueryTexture(TextWhite, NULL, NULL, &pos.w, &pos.h);
+
+    drawImageXY(game, TextBlack, x+1, y+1);
+    drawImageXY(game, TextWhite, x, y);
+
+    SDL_FreeSurface(surfaceTextBlack);
+    SDL_FreeSurface(surfaceTextWhite);
+    SDL_DestroyTexture(TextBlack);
+    SDL_DestroyTexture(TextWhite);
+    return pos;
+ }
+
+SDL_Rect vPrintCenter(GameState* game, int x, int y, const char* text){
+    SDL_Rect pos;
+    pos.x = x;
+    pos.y = y;
+    SDL_Color Black = {0, 0, 0};
+    SDL_Color White = {255, 255, 255};
+    SDL_Surface* surfaceTextBlack = TTF_RenderText_Solid(game->font, text, Black);
+    SDL_Texture* TextBlack = SDL_CreateTextureFromSurface(game->renderer, surfaceTextBlack);
+
+    SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, White); 
+    SDL_Texture* TextWhite = SDL_CreateTextureFromSurface(game->renderer, surfaceTextWhite);
+    SDL_QueryTexture(TextWhite, NULL, NULL, &pos.w, &pos.h);
+
+    drawImageXY(game, TextBlack, (x+1) - (pos.w/2), y+1);
+    drawImageXY(game, TextWhite, x - (pos.w/2), y);
+
+    SDL_FreeSurface(surfaceTextBlack);
+    SDL_FreeSurface(surfaceTextWhite);
+    SDL_DestroyTexture(TextBlack);
+    SDL_DestroyTexture(TextWhite);
+    return pos;
+}

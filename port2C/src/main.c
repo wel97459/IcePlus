@@ -33,6 +33,13 @@ void initGame(GameState* game) {
         SDL_RENDERER_ACCELERATED
     );
 
+    TTF_Init();
+
+    game->font = TTF_OpenFont("font.ttf", 14);
+    if(game->font == NULL){
+        printf("Failed to load Font.\n");
+    }
+
     loadSprites(game);
     loadLogo(game);
     loadSounds(game);
@@ -174,7 +181,6 @@ int main(int argc, char* argv[]) {
                     prepareLevel(&game);
                     game.gameMode = 4;
                     resetGameClip(&game);
-
                 }
             break;
             case MainGameLoop:

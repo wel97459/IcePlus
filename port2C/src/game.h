@@ -2,6 +2,7 @@
 #define GAME_H
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
 
 #define SCREEN_WIDTH 287
 #define SCREEN_HEIGHT 256
@@ -52,6 +53,7 @@ typedef struct {
 typedef struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
+    TTF_Font* font;
     SDL_Texture* renderTarget;
     SDL_Texture* backgoundTexture;
     SDL_Texture* foregoundTexture;
