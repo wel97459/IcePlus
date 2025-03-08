@@ -703,8 +703,6 @@ void prepareIntro(GameState* game) {
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
 
-    drawImageXY(game, game->backgoundTexture, 0, 0);
-
     SDL_Color White = {255, 255, 255};
     SDL_Rect pos = vPrintCenter(game, SCREEN_WIDTH/2, 100, White,  Intro_text[0]);
     pos = vPrintCenter(game, SCREEN_WIDTH/2, pos.y+pos.h, White, Intro_text[1]);
@@ -725,8 +723,6 @@ void setUpIntroScreen(GameState* game) {
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
 
-    drawImageXY(game, game->backgoundTexture, 0, 0);
-
     for (int i = 0; i < 3; i++) {
         game->objs[i].x = -36;
         game->objs[i].y = 178;
@@ -736,7 +732,7 @@ void setUpIntroScreen(GameState* game) {
     game->introCount = -1;
     prepareMenu(game, 0);
     buildShadows(game, 12);
-//    advanceIntro();
+    advanceIntro(game);
     game->gameMode = AnimateIntro;
     drawResetTarget(game);
 }
@@ -750,3 +746,163 @@ void prepareMenu(GameState* game, int selected) {
         pos.x += pos.w+65;
     }
 }
+
+
+void advanceIntro(GameState* game) {
+    game->introCount++;
+    if (game->introCount > 8) {
+       game->introCount = 0;
+    }
+
+    game->counter = 0;
+    drawSetTarget(game, game->foregoundTexture);
+    if (game->introCount < 7) {
+        SDL_Color White = {255, 255, 255};
+        SDL_Rect pos = {SCREEN_WIDTH/2,82,0,0};
+        pos = vPrintCenter(game, pos.x, pos.y, White, Help_text[game->introCount << 1]);
+        vPrintCenter(game, pos.x, pos.y+pos.h, White, Help_text[(game->introCount << 1) + 1]);
+    } else {
+    //    this.gg.setClip(0, 68, 176, 120);
+
+    //    for (int var4 = 0; var4 < 6; var4++) {
+    //       this.gg.drawImage(this.greenIm, var4 * 32, 68, this);
+    //    }
+
+    //    this.gg.setClip(0, 0, 176, 208);
+    //    this.vPrint(88 - this.fm.stringWidth(this.VARIOUS[0]) / 2, 80, this.VARIOUS[0], Color.white);
+    //    int var5 = this.introCount - 7 << 2;
+    //    byte var3 = 102;
+
+    //    for (int var2 = var5; var2 < var5 + 4; var2++) {
+    //       this.vPrint(this.scoreX, var3, this.HIGHSCORES[var2], 0, 14);
+    //       var3 += 16;
+    //    }
+    }
+    drawResetTarget(game);
+ }
+
+void animateIntro(GameState* game) {
+    drawSetTarget(game, game->foregoundTexture);  
+    if (game->introCount < 7) {
+        setClip(game, 0, 118, 176, 70);
+        SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
+        SDL_RenderClear(game->renderer);
+
+        setClip(game, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    switch (game->introCount) {
+       case 0:
+          if (game->objs[0].x < 144) {
+             game->objs[0].look = 11 + cyclic[(game->counter & 7) >> 1];
+             game->objs[0].x += 4;
+          } else if (game->objs[1].x < 96) {
+             game->objs[0].look = 6;
+             game->objs[1].look = 18;
+             game->objs[1].x += 4;
+          } else if (game->objs[2].x < 24) {
+             game->objs[2].look = 25;
+             game->objs[2].x += 4;
+          } else {
+             advanceIntro(game);
+          }
+          break;
+    //    case 1:
+    //       if (this.objs[0].x > 120) {
+    //          this.objs[0].x -= 4;
+    //          this.objs[0].look = 8 + this.cyclic[(this.counter & 7) >> 1];
+    //       } else if (this.objs[1].x > 48) {
+    //          this.objs[1].x -= 6;
+    //       } else if (this.counter > 27) {
+    //          this.advanceIntro();
+    //       }
+    //       break;
+    //    case 2:
+    //       if (this.objs[0].x > 72) {
+    //          this.objs[0].x -= 4;
+    //          this.objs[0].look = 8 + this.cyclic[(this.counter & 7) >> 1];
+    //       } else if (this.objs[1].look < 24) {
+    //          this.objs[1].look = this.objs[1].look + (this.counter & 1);
+    //       } else if (this.objs[0].x > 48) {
+    //          this.objs[1].x = -36;
+    //          this.objs[0].x -= 4;
+    //          this.objs[0].look = 8 + this.cyclic[(this.counter & 7) >> 1];
+    //       } else {
+    //          this.objs[0].look = 6;
+    //          this.objs[1].x = 204;
+    //          this.advanceIntro();
+    //       }
+    //       break;
+    //    case 3:
+    //       this.objs[1].look = 14 + this.cyclic2[this.counter % 6];
+    //       if (this.counter < 25) {
+    //          this.objs[1].x -= 4;
+    //       } else if (this.counter >= 40) {
+    //          if (this.counter < 65) {
+    //             this.objs[1].x += 4;
+    //          } else {
+    //             this.objs[1].x = -24;
+    //             this.advanceIntro();
+    //          }
+    //       }
+    //       break;
+    //    case 4:
+    //       if (this.objs[1].x < this.objs[2].x) {
+    //          this.objs[1].look = 14 + this.cyclic2[this.counter % 6];
+    //          this.objs[1].x += 4;
+    //       } else {
+    //          this.objs[1].look = 42 + (this.counter & 1);
+    //          this.objs[1].x++;
+    //       }
+
+    //       this.objs[2].x -= 6;
+    //       if (this.counter < 32) {
+    //          this.objs[0].look = 10;
+    //       } else {
+    //          this.objs[0].look = 6;
+    //       }
+
+    //       if (this.counter > 39) {
+    //          this.objs[1].look = 18;
+    //          this.objs[1].x = 204;
+    //          this.objs[2].x = 204;
+    //          this.advanceIntro();
+    //       }
+    //       break;
+    //    case 5:
+    //       if (this.objs[2].x > 120) {
+    //          this.objs[2].x -= 4;
+    //       } else if (this.objs[1].x > 144) {
+    //          this.objs[1].x -= 4;
+    //       } else if (this.objs[0].x < 96) {
+    //          this.objs[0].x += 4;
+    //          this.objs[0].look = 11 + this.cyclic[(this.counter & 7) >> 1];
+    //       } else {
+    //          this.advanceIntro();
+    //       }
+    //       break;
+    //    case 6:
+    //       if (this.objs[2].look < 31) {
+    //          this.objs[2].look = this.objs[2].look + (this.counter & 1);
+    //       } else if (this.counter < 45) {
+    //          this.objs[2].x = -36;
+    //          this.objs[0].look = (this.counter & 4) >> 2;
+    //       } else {
+    //          this.objs[0].x = -36;
+    //          this.objs[1].x = -36;
+    //          this.objs[0].look = 0;
+    //          this.objs[1].look = 0;
+    //          this.advanceIntro();
+    //       }
+    //       break;
+       default:
+          if (game->counter > 50) {
+             advanceIntro(game);
+          }
+    }
+
+    for (int i = 0; i < 3; i++){
+        drawShadowSimple(game, i);
+        drawSpriteSimple(game, i);
+    }
+    drawResetTarget(game);
+ }

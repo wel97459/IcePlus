@@ -113,4 +113,6 @@ int gameOver(GameState* game);
 void prepareIntro(GameState* game);
 void prepareMenu(GameState* game, int selected);
 void setUpIntroScreen(GameState* game);
+void advanceIntro(GameState* game);
+void animateIntro(GameState* game);
 #endif

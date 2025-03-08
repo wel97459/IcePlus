@@ -164,13 +164,18 @@ int main(int argc, char* argv[]) {
                     game.gameMode = game.nextMode;
                     game.counter = 0;
                 }
+                SDL_RenderCopy(game.renderer, game.backgoundTexture, NULL, &ScreenSpace);
                 SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             case SetupIntroScreen:
                 setUpIntroScreen(&game);
+                SDL_RenderCopy(game.renderer, game.backgoundTexture, NULL, &ScreenSpace);
                 SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             case AnimateIntro:
+                animateIntro(&game);
+                SDL_RenderCopy(game.renderer, game.backgoundTexture, NULL, &ScreenSpace);
+                SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             case PrepareGameLevel:
                 //printf("PrepareGameLevel: %i\n", game.counter);

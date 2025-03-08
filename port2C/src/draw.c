@@ -393,7 +393,9 @@ SDL_Rect vPrintCenter(GameState* game, int x, int y, SDL_Color color, const char
     pos.y = y;
 
     pos = vPrint(game, (x) - (pos.w/2), y, color, text);
-
+    
+    pos.x = x;
+    pos.y = y;
     return pos;
 }
 
