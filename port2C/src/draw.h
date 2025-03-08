@@ -17,6 +17,8 @@
     void drawToPlayField(GameState* game);
     void drawShadowSimple(GameState* game, int objNum);
     void drawShadow(GameState* game, int objNum);
-    SDL_Rect vPrint(GameState* game, int x, int y, const char* text);
-    SDL_Rect vPrintCenter(GameState* game, int x, int y, const char* text);
+    SDL_Rect vPrint(GameState* game, int x, int y, SDL_Color color, const char* text);
+    SDL_Rect vPrintCenter(GameState* game, int x, int y, SDL_Color color, const char* text);
+    SDL_Rect GetPrintSize(GameState* game, const char* text);
+    void drawGreenBackgound(GameState* game);
 #endif

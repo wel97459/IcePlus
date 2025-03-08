@@ -46,8 +46,6 @@ SDL_Texture* drawNewTexture(GameState* game){
 }
 
 void drawSetTarget(GameState* game, SDL_Texture* target){
-    // Save the current rendering target (will be NULL if it is the current window)
-    game->renderTarget = SDL_GetRenderTarget(game->renderer);
     SDL_SetRenderTarget(game->renderer, target);
 }
 
@@ -366,21 +364,20 @@ void drawShadow(GameState* game, int objNum) {
     SDL_RenderSetClipRect(game->renderer, NULL);
 }
 
-SDL_Rect vPrint(GameState* game, int x, int y, const char* text){
+SDL_Rect vPrint(GameState* game, int x, int y, SDL_Color color, const char* text){
     SDL_Rect pos;
     pos.x = x;
     pos.y = y;
     SDL_Color Black = {0, 0, 0};
-    SDL_Color White = {255, 255, 255};
     SDL_Surface* surfaceTextBlack = TTF_RenderText_Solid(game->font, text, Black);
     SDL_Texture* TextBlack = SDL_CreateTextureFromSurface(game->renderer, surfaceTextBlack);
 
-    SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, White); 
+    SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, color); 
     SDL_Texture* TextWhite = SDL_CreateTextureFromSurface(game->renderer, surfaceTextWhite);
     pos.w = surfaceTextWhite->w;
     pos.h = surfaceTextWhite->h;
 
-    drawImageXY(game, TextBlack, x+1, y+1);
+    drawImageXY(game, TextBlack, x+2, y+2);
     drawImageXY(game, TextWhite, x, y);
 
     SDL_FreeSurface(surfaceTextBlack);
@@ -390,27 +387,13 @@ SDL_Rect vPrint(GameState* game, int x, int y, const char* text){
     return pos;
  }
 
-SDL_Rect vPrintCenter(GameState* game, int x, int y, const char* text){
-    SDL_Rect pos;
+SDL_Rect vPrintCenter(GameState* game, int x, int y, SDL_Color color, const char* text){
+    SDL_Rect pos = GetPrintSize(game, text);
     pos.x = x;
     pos.y = y;
-    SDL_Color Black = {0, 0, 0};
-    SDL_Color White = {255, 255, 255};
-    SDL_Surface* surfaceTextBlack = TTF_RenderText_Solid(game->font, text, Black);
-    SDL_Texture* TextBlack = SDL_CreateTextureFromSurface(game->renderer, surfaceTextBlack);
 
-    SDL_Surface* surfaceTextWhite = TTF_RenderText_Solid(game->font, text, White); 
-    SDL_Texture* TextWhite = SDL_CreateTextureFromSurface(game->renderer, surfaceTextWhite);
-    pos.w = surfaceTextWhite->w;
-    pos.h = surfaceTextWhite->h;
+    pos = vPrint(game, (x) - (pos.w/2), y, color, text);
 
-    drawImageXY(game, TextBlack, (x+1) - (pos.w/2), y+1);
-    drawImageXY(game, TextWhite, x - (pos.w/2), y);
-
-    SDL_FreeSurface(surfaceTextBlack);
-    SDL_FreeSurface(surfaceTextWhite);
-    SDL_DestroyTexture(TextBlack);
-    SDL_DestroyTexture(TextWhite);
     return pos;
 }
 
@@ -424,4 +407,18 @@ SDL_Rect GetPrintSize(GameState* game, const char* text){
     pos.h = surfaceTextWhite->h;
     SDL_FreeSurface(surfaceTextWhite);
     return pos;
+}
+
+void drawGreenBackgound(GameState* game)
+{
+    drawSetTarget(game, game->backgoundTexture);
+
+    for (int i = 0; i < SCREEN_HEIGHT; i++) {
+        SDL_SetRenderDrawColor(game->renderer, 0, i>>1, 0,255);
+        SDL_RenderDrawLine(game->renderer, 0,i,SCREEN_WIDTH,i);
+    }
+
+    drawImageXY(game, game->logo, (SCREEN_WIDTH>>1) - (176>>1) , 10);
+
+    drawResetTarget(game);
 }

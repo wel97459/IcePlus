@@ -203,7 +203,6 @@ void buildMap(GameState* game, int* levelValues) {
 }
 
 void buildTiles(GameState* game) {
-    game->backgoundTexture = drawNewTexture(game);
     drawSetTarget(game, game->backgoundTexture);
 
     for (int i = 0; i < 672; i++) {
@@ -363,7 +362,8 @@ void gameStart(GameState* game){
 
     char lvlText[64];
     sprintf(lvlText, Level_text, game->level+1); 
-    vPrintCenter(game, SCREEN_WIDTH/2, 50,(const char*) lvlText);
+    SDL_Color White = {255, 255, 255};
+    vPrintCenter(game, SCREEN_WIDTH/2, 50, White,(const char*) lvlText);
 
     drawResetTarget(game);
     
@@ -675,7 +675,8 @@ void updatePlayerDied(GameState* game, int objNum){
 }
 
 int gameOver(GameState* game){
-    vPrintCenter(game, SCREEN_WIDTH/2, 100, Various_text[1]);
+    SDL_Color White = {255, 255, 255};
+    vPrintCenter(game, SCREEN_WIDTH/2, 100, White, Various_text[1]);
     if (game->counter <= 100) {
        return 1;
     }
@@ -695,26 +696,57 @@ int gameOver(GameState* game){
 }
 
 void prepareIntro(GameState* game) {
+    drawGreenBackgound(game);
+    
     drawSetTarget(game, game->foregoundTexture);
 
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
     SDL_RenderClear(game->renderer);
 
-    for (int i = 0; i < SCREEN_HEIGHT; i++) {
-        SDL_SetRenderDrawColor(game->renderer, 0, i>>1, 0,255);
-        SDL_RenderDrawLine(game->renderer, 0,i,SCREEN_WIDTH,i);
-    }
+    drawImageXY(game, game->backgoundTexture, 0, 0);
 
-    drawImageXY(game, game->logo, (SCREEN_WIDTH>>1) - (176>>1) , 10);
-
-    SDL_Rect pos = vPrintCenter(game, SCREEN_WIDTH/2, 100, Intro_text[0]);
-    pos = vPrintCenter(game, SCREEN_WIDTH/2, pos.y+pos.h, Intro_text[1]);
-    pos = vPrintCenter(game, SCREEN_WIDTH/2, pos.y+pos.h, Intro_text[2]);
+    SDL_Color White = {255, 255, 255};
+    SDL_Rect pos = vPrintCenter(game, SCREEN_WIDTH/2, 100, White,  Intro_text[0]);
+    pos = vPrintCenter(game, SCREEN_WIDTH/2, pos.y+pos.h, White, Intro_text[1]);
+    pos = vPrintCenter(game, SCREEN_WIDTH/2, pos.y+pos.h, White, Intro_text[2]);
 
     drawResetTarget(game);
 
     game->gameMode = 0;
-    //this.adjustStrings();
     game->counter = 0;
     game->nextMode = 1;
  }
+
+void setUpIntroScreen(GameState* game) {
+    drawGreenBackgound(game);
+    
+    drawSetTarget(game, game->foregoundTexture);
+
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
+    SDL_RenderClear(game->renderer);
+
+    drawImageXY(game, game->backgoundTexture, 0, 0);
+
+    for (int i = 0; i < 3; i++) {
+        game->objs[i].x = -36;
+        game->objs[i].y = 178;
+        game->objs[i].look = 0;
+    }
+
+    game->introCount = -1;
+    prepareMenu(game, 0);
+    buildShadows(game, 12);
+//    advanceIntro();
+    game->gameMode = AnimateIntro;
+    drawResetTarget(game);
+}
+
+void prepareMenu(GameState* game, int selected) {
+    game->selected = selected;
+    SDL_Color White = {255, 255, 255};
+    SDL_Rect pos = {13,0,0,0};
+    for (int i = 0; i < 3; i++) {
+        pos = vPrint(game, pos.x , SCREEN_HEIGHT - 32, White, Menu_text[i]);
+        pos.x += pos.w+65;
+    }
+}

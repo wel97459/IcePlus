@@ -64,6 +64,7 @@ typedef struct {
     SDL_Texture* greenBG;
     Mix_Chunk* sounds[6];
     IceObject objs[10];
+    int selected;
     int sortN;
     int sortY[10];
     int sortIX[10];
@@ -76,6 +77,7 @@ typedef struct {
     GameModes nextMode;
     uint32_t nextTime;
     int counter;
+    int introCount;
     int lastKey;
     int running;
     int level;
@@ -109,4 +111,6 @@ void updateKillScore(GameState* game, int objNum);
 void updatePlayerDied(GameState* game, int objNum);
 int gameOver(GameState* game);
 void prepareIntro(GameState* game);
+void prepareMenu(GameState* game, int selected);
+void setUpIntroScreen(GameState* game);
 #endif

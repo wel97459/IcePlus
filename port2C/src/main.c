@@ -33,6 +33,8 @@ void initGame(GameState* game) {
         SDL_RENDERER_ACCELERATED
     );
 
+    game->renderTarget = SDL_GetRenderTarget(game->renderer);
+
     TTF_Init();
 
     game->font = TTF_OpenFont("font.ttf", 14);
@@ -46,6 +48,7 @@ void initGame(GameState* game) {
 
     game->running = true;
     game->foregoundTexture = drawNewTexture(game);
+    game->backgoundTexture = drawNewTexture(game);
 
     startSession(game);
 }
@@ -164,7 +167,11 @@ int main(int argc, char* argv[]) {
                 SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             case SetupIntroScreen:
+                setUpIntroScreen(&game);
+                SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
+            break;
             case AnimateIntro:
+            break;
             case PrepareGameLevel:
                 //printf("PrepareGameLevel: %i\n", game.counter);
                 gameStart(&game);
