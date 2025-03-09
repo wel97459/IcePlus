@@ -793,7 +793,7 @@ void animateIntro(GameState* game) {
     
     switch (game->introCount) {
        case 0:
-          if (game->objs[0].x < 144) {
+          if (game->objs[0].x < SCREEN_WIDTH-64) {
              game->objs[0].look = 11 + cyclic[(game->counter & 7) >> 1];
              game->objs[0].x += 4;
           } else if (game->objs[1].x < 96) {
@@ -829,7 +829,7 @@ void animateIntro(GameState* game) {
              game->objs[0].look = 8 + cyclic[(game->counter & 7) >> 1];
           } else {
              game->objs[0].look = 6;
-             game->objs[1].x = 204;
+             game->objs[1].x = SCREEN_WIDTH;
              advanceIntro(game);
           }
           break;
@@ -864,8 +864,8 @@ void animateIntro(GameState* game) {
 
           if (game->counter > 39) {
              game->objs[1].look = 18;
-             game->objs[1].x = 204;
-             game->objs[2].x = 204;
+             game->objs[1].x = SCREEN_WIDTH;
+             game->objs[2].x = SCREEN_WIDTH;
              advanceIntro(game);
           }
           break;

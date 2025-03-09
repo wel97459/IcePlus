@@ -143,6 +143,7 @@ SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha)
 
     uint32_t* pixels = (uint32_t*)dest->pixels;
     uint8_t* src_pixels = (uint8_t*)surface->pixels;
+    uint8_t red, green, blue;
     //111 111 11
     // Iterate over each pixel
     for (int y = 0; y < surface->h; y++) {
@@ -151,14 +152,9 @@ SDL_Surface* convert_rgb332_to_rgba8888(SDL_Surface* surface, const int noAlpha)
             uint8_t pixel = *(src_pixels + y * surface->pitch + x);
 
             // Extract RGB components from the 3-bit format
-            uint8_t red = (pixel & 0xE0) >> 5;      // 3 bits for red
-            uint8_t green = (pixel & 0x1c) >> 2;    // 3 bit for green
-            uint8_t blue = (pixel & 0x03);            // 2 bits for blue
-
-            // Convert to 8-bit components and scale appropriately
-            red = rgb332_3b_lut[red];           // Scale 3 bits to 8 bits
-            green = rgb332_3b_lut[green];       // Scale 3 bit to 8 bits
-            blue = rgb332_2b_lut[blue];        // Scale 2 bits to 8 bits
+            red = rgb332_3b_lut[(pixel & 0xE0) >> 5];      // 3 bits for red
+            green = rgb332_3b_lut[(pixel & 0x1c) >> 2];    // 3 bit for green
+            blue = rgb332_2b_lut[(pixel & 0x03)];            // 2 bits for blue
 
             // Create the RGBA pixel (assuming alpha is 255 for no transparency)
             uint32_t rgba_pixel = (red << 16) | (green << 8) | blue | ((red+green+blue+noAlpha) ? 0xFF000000 : 0x00000000);
@@ -371,6 +367,7 @@ void buildShadows(GameState* game, int color) {
     
         game->shadows[i] = createImage(game, &shadByte[384 * i], 24, 16, 0);
     }
+    free(shadByte);
  }
 
 void loadLogo(GameState* game){
