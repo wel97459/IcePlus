@@ -72,10 +72,7 @@ void drawImageXY(GameState* game, SDL_Texture* tex, int x, int y){
 
 void drawSpriteSimple(GameState* game, int objNum) {
     IceObject* obj = &game->objs[objNum];
-    if(obj->type == 0) return;
-    SDL_Rect dest = {obj->x, obj->y - spriteH[obj->look], 24, 32};
-    SDL_QueryTexture(game->sprites[obj->look], NULL, NULL, &dest.w, &dest.h);
-    SDL_RenderCopy(game->renderer, game->sprites[obj->look], NULL, &dest);
+    drawImageXY(game, game->sprites[obj->look], obj->x, obj->y - spriteH[obj->look]);
 }
 
 void drawSprite(GameState* game, int objNum) {
@@ -293,8 +290,12 @@ void drawShadowSimple(GameState* game, int objNum) {
        var2 = 2;
     }
 
+    int var9 = obj->x + shadowX[obj->look];
+    if ((var9 + obj->y + game->counter & 1) > 0)
+        var2++;
+
     if (shadowX[obj->look] > 0) {
-       drawImage(game, game->shadows[var2], obj->x + shadowX[obj->look], obj->y - 16, 24, 16);
+       drawImageXY(game, game->shadows[var2], obj->x + shadowX[obj->look], obj->y - 16);
     }
  }
 

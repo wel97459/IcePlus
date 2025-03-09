@@ -10,7 +10,7 @@
 
 #define SPRITE_COUNT 48
 #define BLOCK_COUNT 17
-#define SHADOW_COUNT 4
+#define SHADOW_COUNT 5
 
 extern const SDL_Rect ScreenSpace;
 
