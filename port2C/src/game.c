@@ -755,30 +755,26 @@ void advanceIntro(GameState* game) {
     }
 
     game->counter = 0;
+    SDL_Color White = {255, 255, 255};
+    SDL_Rect pos = {SCREEN_WIDTH/2,82,0,0};
 
     if (game->introCount < 7) {
         SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
         SDL_Rect r = {0, 68, SCREEN_WIDTH, 50};
         SDL_RenderFillRect(game->renderer, &r);
 
-        SDL_Color White = {255, 255, 255};
-        SDL_Rect pos = {SCREEN_WIDTH/2,82,0,0};
         pos = vPrintCenter(game, pos.x, pos.y, White, Help_text[game->introCount << 1]);
         vPrintCenter(game, pos.x, pos.y+pos.h, White, Help_text[(game->introCount << 1) + 1]);
     } else {
-    //    this.gg.setClip(0, 68, 176, 120);
-
         SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
         SDL_Rect r = {0, 68, SCREEN_WIDTH, 120};
         SDL_RenderFillRect(game->renderer, &r);
-    //    this.gg.setClip(0, 0, 176, 208);
-    //    this.vPrint(88 - this.fm.stringWidth(this.VARIOUS[0]) / 2, 80, this.VARIOUS[0], Color.white);
-    //    int var5 = this.introCount - 7 << 2;
-    //    byte var3 = 102;
 
-    //    for (int var2 = var5; var2 < var5 + 4; var2++) {
-    //       this.vPrint(this.scoreX, var3, this.HIGHSCORES[var2], 0, 14);
-    //       var3 += 16;
+        pos = vPrintCenter(game, pos.x, pos.y, White, Various_text[0]);
+    //     int var5 = game->introCount - 7 << 2
+
+    //    for (int i = var5; i < var5 + 4; i++) {
+    //       vPrint(this.scoreX, var3, this.HIGHSCORES[i], 0, 14);
     //    }
     }
  }
