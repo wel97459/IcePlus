@@ -755,7 +755,6 @@ void advanceIntro(GameState* game) {
     }
 
     game->counter = 0;
-    drawSetTarget(game, game->foregoundTexture);
 
     if (game->introCount < 7) {
         SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 0);
@@ -782,7 +781,6 @@ void advanceIntro(GameState* game) {
     //       var3 += 16;
     //    }
     }
-    drawResetTarget(game);
  }
 
 void animateIntro(GameState* game) {
