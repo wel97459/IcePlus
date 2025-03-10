@@ -9,7 +9,7 @@ const SDL_Rect ScreenSpace = {0, 0, SCREEN_WIDTH*SCREEN_SIZE, SCREEN_HEIGHT*SCRE
 const unsigned char levIce[] = {12, 12, 13, 13, 14, 14, 16, 16, 12, 12, 12, 17, 17, 12, 12, 18, 18, 12, 12, 12};
 const unsigned char levRock[] = {7, 7, 7, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6};
 const int offsets[] = {0, -12, 12, -1, 1};
-const int motionKeys[] = {0, SDLK_UP, SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT};
+const int motionKeys[] = {0, SDLK_UP, SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE, SDLK_RETURN};
 const int cyclic[] = {0, 1, 2, 1};
 const int cyclic2[] = {0, 1, 2, 3, 2, 1};
 const int pStepX[] = {3, 4, 3, 4, 3, 4, 3};
@@ -108,15 +108,37 @@ int currentFloorRandom()
     return (rand() % 576);
 }
 
+void updateScore(GameState* game, int incAmount)
+{
+    game->score += incAmount;
+    drawSetTarget(game, game->backgoundTexture);
+    //Draw Top
+    for (int i = 0; i < 4; i++) {
+        drawBlockSimple(game, 6, i * 72, 0);
+    }
+    SDL_Color White = {255, 255, 255};
+    char str[64];
+    sprintf(str,"%05i", game->score);
+    vPrint(game, 1, 1, White, str);
+
+    int lives = game->lives;
+
+    for (short i = SCREEN_WIDTH-19; lives > 0; i -= 19) {
+        drawImageXY(game, game->sprites[46], i, 0);
+        lives--;
+    }
+
+    drawResetTarget(game);
+
+}
+
 void startSession(GameState* game) {
     game->gameMode = PrepareGameLevel;
     game->level = 0;
     game->lives = 2;
     game->score = 0;
-    //this.updateScore(0);
     resetGameClip(game);
     buildShadows(game, 0);
-    prepareIntro(game);
 }
 
 void prepareLevel(GameState* game) {
@@ -136,6 +158,7 @@ void prepareLevel(GameState* game) {
 
     addObject(game, 1, 13, 11, 0);
     game->coins = 0;
+    updateScore(game, 0);
 }
 
 void buildMap(GameState* game, int* levelValues) {
@@ -288,7 +311,7 @@ void startGame(GameState* game) {
     game->level = 0;
     game->lives = 2;
     game->score = 0;
-    //updateScore(0);
+
     resetGameClip(game);
     buildShadows(game, 12);
 }
@@ -499,10 +522,10 @@ void updateBlocks(GameState* game, int objNum){
 
             if (obj1->type == 6) {
                 obj1->look = 42;
-                //this.updateScore(50);
+                updateScore(game, 50);
             } else {
                 obj1->look = 44;
-                //this.updateScore(100);
+                updateScore(game, 100);
             }
 
             int var30 = 0;
@@ -535,14 +558,14 @@ void updateBreakBlock(GameState* game, int objNum){
     //    }
 
         game->coins++;
-        //this.updateScore(25);
+        updateScore(game, 25);
         if (game->coins == 5) {
             player->look = 1;
             game->gameMode = 7;
             game->counter = 0;
         }
     } else {
-        //this.updateScore(5);
+        updateScore(game, 5);
     }
 
     obj->type = 0;
@@ -663,6 +686,7 @@ void updatePlayerDied(GameState* game, int objNum){
             obj->look = 6;
             obj->type = 1;
             prepareEnemies(game);
+            updateScore(game, 0);
         } else {
             // if (this.soundOn != 0) {
             playSound(game, 5);
@@ -675,8 +699,11 @@ void updatePlayerDied(GameState* game, int objNum){
 }
 
 int gameOver(GameState* game){
+    drawSetTarget(game, game->foregoundTexture); 
     SDL_Color White = {255, 255, 255};
-    vPrintCenter(game, SCREEN_WIDTH/2, 100, White, Various_text[1]);
+    vPrintCenter(game, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, White, Various_text[1]);
+    drawResetTarget(game);
+
     if (game->counter <= 100) {
        return 1;
     }
@@ -687,10 +714,10 @@ int gameOver(GameState* game){
 
     if (game->score > game->highscores[7]) {
        //prepareHighscores();
-       return 1;
+       //return 0;
     }
 
-    buildShadows(game, 12);
+    buildShadows(game, 0);
     prepareIntro(game);
     return 0;
 }
@@ -739,10 +766,11 @@ void setUpIntroScreen(GameState* game) {
 
 void prepareMenu(GameState* game, int selected) {
     game->selected = selected;
-    SDL_Color White = {255, 255, 255};
-    SDL_Rect pos = {13,0,0,0};
+    SDL_Color Grey = {64, 64, 64};
+    SDL_Rect pos = {13,SCREEN_HEIGHT - 32,0,0};
     for (int i = 0; i < 3; i++) {
-        pos = vPrint(game, pos.x , SCREEN_HEIGHT - 32, White, Menu_text[i]);
+        game->menuX[i] = pos.x;
+        pos = vPrint(game, pos.x , pos.y, Grey, Menu_text[i]);
         pos.x += pos.w+65;
     }
 }
@@ -771,11 +799,13 @@ void advanceIntro(GameState* game) {
         SDL_RenderFillRect(game->renderer, &r);
 
         pos = vPrintCenter(game, pos.x, pos.y, White, Various_text[0]);
-    //     int var5 = game->introCount - 7 << 2
-
-    //    for (int i = var5; i < var5 + 4; i++) {
-    //       vPrint(this.scoreX, var3, this.HIGHSCORES[i], 0, 14);
-    //    }
+        int var5 = game->introCount - 7 << 2;
+        char str[128];
+        for (int i = var5; i < var5 + 4; i++) {
+            sprintf(str, "%i. %05i ...",i+1, game->highscores[i]);
+            pos.y += pos.h;
+            pos = vPrintCenter(game, pos.x, pos.y, White, str);
+        }
     }
  }
 
@@ -792,11 +822,11 @@ void animateIntro(GameState* game) {
           if (game->objs[0].x < SCREEN_WIDTH-64) {
              game->objs[0].look = 11 + cyclic[(game->counter & 7) >> 1];
              game->objs[0].x += 4;
-          } else if (game->objs[1].x < 96) {
+          } else if (game->objs[1].x < 144) {
              game->objs[0].look = 6;
              game->objs[1].look = 18;
              game->objs[1].x += 4;
-          } else if (game->objs[2].x < 24) {
+          } else if (game->objs[2].x < 72) {
              game->objs[2].look = 25;
              game->objs[2].x += 4;
           } else {
@@ -804,22 +834,22 @@ void animateIntro(GameState* game) {
           }
           break;
        case 1:
-          if (game->objs[0].x > 120) {
+          if (game->objs[0].x > 168) {
              game->objs[0].x -= 4;
              game->objs[0].look = 8 + cyclic[(game->counter & 7) >> 1];
-          } else if (game->objs[1].x > 48) {
+          } else if (game->objs[1].x > 96) {
              game->objs[1].x -= 6;
           } else if (game->counter > 27) {
             advanceIntro(game);
           }
         break;
        case 2:
-          if (game->objs[0].x > 72) {
+          if (game->objs[0].x > 120) {
              game->objs[0].x -= 4;
              game->objs[0].look = 8 + cyclic[(game->counter & 7) >> 1];
           } else if (game->objs[1].look < 24) {
              game->objs[1].look = game->objs[1].look + (game->counter & 1);
-          } else if (game->objs[0].x > 48) {
+          } else if (game->objs[0].x > 96) {
              game->objs[1].x = -36;
              game->objs[0].x -= 4;
              game->objs[0].look = 8 + cyclic[(game->counter & 7) >> 1];
@@ -866,11 +896,11 @@ void animateIntro(GameState* game) {
           }
           break;
        case 5:
-          if (game->objs[2].x > 120) {
+          if (game->objs[2].x > 168) {
              game->objs[2].x -= 4;
-          } else if (game->objs[1].x > 144) {
+          } else if (game->objs[1].x > 192) {
              game->objs[1].x -= 4;
-          } else if (game->objs[0].x < 96) {
+          } else if (game->objs[0].x < 144) {
              game->objs[0].x += 4;
              game->objs[0].look = 11 + cyclic[(game->counter & 7) >> 1];
           } else {
@@ -904,6 +934,32 @@ void animateIntro(GameState* game) {
     for (int i = 0; i < 4; i++){
         drawSpriteSimple(game, i);
     }
+
+    SDL_Color Grey = {64, 64, 64};
+    SDL_Color White = {255, 255, 255};
+
+    if (game->lastKey != game->lastLastKey) {
+        game->lastLastKey = game->lastKey;
+        if (game->lastKey == motionKeys[3]) {
+        if (game->selected > 0) {
+            vPrint(game, game->menuX[game->selected], SCREEN_HEIGHT - 32, Grey, Menu_text[game->selected]);
+            game->selected--;
+        }
+        } else if (game->lastKey == motionKeys[4] && game->selected < 2) {
+            vPrint(game, game->menuX[game->selected], SCREEN_HEIGHT - 32, Grey, Menu_text[game->selected]);
+            game->selected++;
+        }
+        if (game->lastKey == motionKeys[5] || game->lastKey == motionKeys[6]) {
+            if (game->selected == 0) {
+                startSession(game);
+            } else if (game->selected == 1) {
+                //prepareSettings();
+            } else if (game->selected == 2) {
+                game->running = 0;
+            }
+        }
+    }
+    vPrint(game, game->menuX[game->selected], SCREEN_HEIGHT - 32, (game->counter%20) < 10 ? White : Grey, Menu_text[game->selected]);
 
     drawResetTarget(game);
  }

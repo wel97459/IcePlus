@@ -79,6 +79,8 @@ typedef struct {
     int counter;
     int introCount;
     int lastKey;
+    int lastLastKey;
+    int menuX[4];
     int running;
     int level;
     int maxLevel;

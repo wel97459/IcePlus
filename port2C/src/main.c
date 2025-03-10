@@ -50,7 +50,7 @@ void initGame(GameState* game) {
     game->foregoundTexture = drawNewTexture(game);
     game->backgoundTexture = drawNewTexture(game);
 
-    startSession(game);
+    prepareIntro(game);
 }
 
 void handleInput(GameState* game) {
@@ -59,15 +59,7 @@ void handleInput(GameState* game) {
         if (e.type == SDL_QUIT) game->running = false;
         
         if (e.type == SDL_KEYDOWN) {
-            switch (e.key.keysym.sym) {
-                case SDLK_ESCAPE: game->running = false; break;
-                case SDLK_LEFT:  game->lastKey = SDLK_LEFT; break;
-                case SDLK_RIGHT: game->lastKey = SDLK_RIGHT; break;
-                case SDLK_UP:    game->lastKey = SDLK_UP; break;
-                case SDLK_DOWN:  game->lastKey = SDLK_DOWN; break;
-                case SDLK_SPACE: game->lastKey = SDLK_SPACE; break;
-            }
-
+                game->lastKey = e.key.keysym.sym; 
         }else if (e.type == SDL_KEYUP) {
             if (e.key.keysym.sym == game->lastKey) {
                 game->lastKey = 0;
@@ -214,6 +206,8 @@ int main(int argc, char* argv[]) {
             break;
             case GameOver:
                 gameOver(&game);
+                SDL_RenderCopy(game.renderer, game.backgoundTexture, NULL, &ScreenSpace);
+                SDL_RenderCopy(game.renderer, game.foregoundTexture, NULL, &ScreenSpace);
             break;
             default:
                 break;

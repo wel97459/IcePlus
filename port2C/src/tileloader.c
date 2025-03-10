@@ -330,7 +330,7 @@ int loadBlocks(GameState* game, const char *filename){
 }
 
 void buildShadows(GameState* game, int color) {
-    unsigned char* shadByte = (unsigned char*)malloc(1536);
+    unsigned char* shadByte = (unsigned char*)calloc(1536, 1);
     int index = 0;
     int var7 = 768;
     if (color == 0) {
