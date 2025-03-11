@@ -1,8 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
 
 #define SCREEN_WIDTH 287
 #define SCREEN_HEIGHT 256

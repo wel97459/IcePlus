@@ -64,7 +64,7 @@ const char levNames[10][24] = {
 void playSound(GameState* game, int sound)
 {
     //if (game->soundOn != 0) {
-    Mix_PlayChannel(-1, game->sounds[sound], 0);
+    //Mix_PlayChannel(-1, game->sounds[sound], 0);
     //}
 }
 
@@ -372,7 +372,6 @@ void gameStart(GameState* game){
         game->objs[0].x = EnemyX;
         EnemyX += 30;
         if (game->enemies[e] > 0) {
-            printf("e: %i\n", game->enemies[e]);
             if (game->enemies[e] == 6) {
                 game->objs[0].look = 15;
             } else {

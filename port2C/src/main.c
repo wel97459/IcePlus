@@ -1,24 +1,27 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL.h>
+#include <SDL_mixer.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "game.h"
 #include "tileloader.h"
 #include "draw.h"
+#ifdef __SWITCH__
+    #include <switch.h>
+#endif
 
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
-    for (int i = 0; i < 6; i++) {
-        char path[50];
-        snprintf(path, sizeof(path), "../sounds/sound%d.wav", i);
-        game->sounds[i] = Mix_LoadWAV(path);
-    }
+    // for (int i = 0; i < 6; i++) {
+    //     char path[50];
+    //     snprintf(path, sizeof(path), "../sounds/sound%d.wav", i);
+    //     game->sounds[i] = Mix_LoadWAV(path);
+    // }
 }
 
 void initGame(GameState* game) {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+    //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     
     game->window = SDL_CreateWindow(
         "IcePlus", 
@@ -128,9 +131,9 @@ void cleanup(GameState* game) {
         SDL_DestroyTexture(game->blocks[i]);
     }
 
-    for (int i = 0; i < 6; i++) {
-        Mix_FreeChunk(game->sounds[i]);
-    }
+    // for (int i = 0; i < 6; i++) {
+    //     Mix_FreeChunk(game->sounds[i]);
+    // }
 
     SDL_DestroyTexture(game->logo);
     SDL_DestroyTexture(game->foregoundTexture);
@@ -138,14 +141,18 @@ void cleanup(GameState* game) {
 
     SDL_DestroyRenderer(game->renderer);
     SDL_DestroyWindow(game->window);
-    Mix_CloseAudio();
+   // Mix_CloseAudio();
     SDL_Quit();
 }
 
 int main(int argc, char* argv[]) {
     GameState game = {0};
     initGame(&game);
+    Uint32 start_time = SDL_GetTicks();
+    Uint32 end_time;
+    Uint32 delay_time;
     while (game.running) {
+        start_time = SDL_GetTicks();
         game.counter++;
         handleInput(&game);
         switch (game.gameMode)
@@ -213,7 +220,12 @@ int main(int argc, char* argv[]) {
                 break;
         }
         SDL_RenderPresent(game.renderer);
-        SDL_Delay(60);  // ~60 FPS
+        end_time = SDL_GetTicks();
+        delay_time = 1000 / 20 - (end_time - start_time);
+        if(delay_time > 100) delay_time = 100;
+        if (delay_time > 0) {
+            SDL_Delay(delay_time);
+        }
     }
     
     cleanup(&game);
