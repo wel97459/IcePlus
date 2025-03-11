@@ -13,7 +13,6 @@ if(NINTENDO_SWITCH)
     list(APPEND CMAKE_MODULE_PATH "$ENV{DEVKITPRO}/cmake/Platform")
     include(Switch)
     include(NintendoSwitch)
-    set(__SWITCH__ true)
 endif()
 
 
@@ -36,5 +35,8 @@ target_link_libraries(${PROJECT_NAME}
     ${NX_LINKER_FLAGS}
     )
 
-nx_generate_nacp(${PROJECT_NAME},${PROJECT_NAME},"wel97459","1.0.0")
-nx_create_nro(${PROJECT_NAME})
+if(NINTENDO_SWITCH)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE __SWITCH__)
+    nx_generate_nacp(${PROJECT_NAME},${PROJECT_NAME},"wel97459","1.0.0")
+    nx_create_nro(${PROJECT_NAME} ROMFS "romfs")
+endif()

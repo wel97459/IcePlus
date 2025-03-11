@@ -1,12 +1,29 @@
 #ifndef GAME_H
 #define GAME_H
 #include <SDL.h>
-#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
+#ifdef __SWITCH__
+    #include <switch.h>
+    #include <switch/services/hid.h>
+    #define FILE_LOC "romfs:/"
+#else
+    #define FILE_LOC "../"
+#endif
+
+#define SCREEN_SIZE 2
 #define SCREEN_WIDTH 287
 #define SCREEN_HEIGHT 256
-#define SCREEN_SIZE 2
+#define SCREEN_FINALE_WIDTH (SCREEN_WIDTH * SCREEN_SIZE)
+#define SCREEN_FINALE_HEIGHT (SCREEN_HEIGHT * SCREEN_SIZE)
+
+#ifdef __SWITCH__
+    #define WINDOW_WIDTH 1280
+    #define WINDOW_HEIGHT 720
+#else
+    #define WINDOW_WIDTH (SCREEN_WIDTH * SCREEN_SIZE)
+    #define WINDOW_HEIGHT (SCREEN_HEIGHT * SCREEN_SIZE)
+#endif
 
 #define SPRITE_COUNT 48
 #define BLOCK_COUNT 17
@@ -62,7 +79,7 @@ typedef struct {
     SDL_Texture* shadows[SHADOW_COUNT];
     SDL_Texture* logo;
     SDL_Texture* greenBG;
-    Mix_Chunk* sounds[6];
+    //Mix_Chunk* sounds[6];
     IceObject objs[10];
     int selected;
     int sortN;
@@ -78,6 +95,9 @@ typedef struct {
     uint32_t nextTime;
     int counter;
     int introCount;
+    #ifdef __SWITCH__
+        PadState pad;
+    #endif
     int lastKey;
     int lastLastKey;
     int menuX[4];

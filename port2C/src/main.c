@@ -6,9 +6,6 @@
 #include "game.h"
 #include "tileloader.h"
 #include "draw.h"
-#ifdef __SWITCH__
-    #include <switch.h>
-#endif
 
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
@@ -20,13 +17,22 @@ void loadSounds(GameState* game) {
 }
 
 void initGame(GameState* game) {
+    
+    #ifdef __SWITCH__
+        // Initialize the default gamepad (which reads handheld mode inputs as well as the first connected controller)
+        padInitializeDefault(&game->pad);
+        // Configure our supported input layout: a single player with standard controller styles
+        padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+        romfsInit();
+    #endif
+
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     
     game->window = SDL_CreateWindow(
         "IcePlus", 
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        SCREEN_WIDTH * SCREEN_SIZE, SCREEN_HEIGHT * SCREEN_SIZE
+        WINDOW_WIDTH, WINDOW_HEIGHT
         , SDL_WINDOW_SHOWN
     );
 
@@ -37,13 +43,14 @@ void initGame(GameState* game) {
     );
 
     game->renderTarget = SDL_GetRenderTarget(game->renderer);
-
+    
     TTF_Init();
-
-    game->font = TTF_OpenFont("font.ttf", 14);
+    
+    game->font = TTF_OpenFont(FILE_LOC "font.ttf", 14);
     if(game->font == NULL){
         printf("Failed to load Font.\n");
     }
+
 
     loadSprites(game);
     loadLogo(game);
@@ -69,6 +76,27 @@ void handleInput(GameState* game) {
             }
         }
     }
+    
+    #ifdef __SWITCH__
+    padUpdate(&game->pad);
+    uint64_t kHeld = padGetButtons(&game->pad);
+        if(kHeld & HidNpadButton_Plus)
+            game->running = false;
+        else if(kHeld & HidNpadButton_A)
+            game->lastKey = SDLK_RETURN;
+        else if(kHeld & HidNpadButton_Left)
+            game->lastKey = SDLK_LEFT;
+        else if(kHeld & HidNpadButton_Right)
+            game->lastKey = SDLK_RIGHT;
+        else if(kHeld & HidNpadButton_Up)
+            game->lastKey = SDLK_UP;
+        else if(kHeld & HidNpadButton_Down)
+            game->lastKey = SDLK_DOWN;
+        else
+            game->lastKey = 0;
+
+    #endif
+
 }
 
 void updateMainGame(GameState* game) {
@@ -152,6 +180,9 @@ int main(int argc, char* argv[]) {
     Uint32 end_time;
     Uint32 delay_time;
     while (game.running) {
+        #ifdef __SWITCH__
+        appletMainLoop();
+        #endif
         start_time = SDL_GetTicks();
         game.counter++;
         handleInput(&game);

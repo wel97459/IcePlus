@@ -81,7 +81,6 @@ const unsigned char rgb332_2b_lut[] = {0x00, 0x55, 0xaa, 0xff };
 
 #define BACKBYTE_SIZE 6720
 #define SPRITE_SIZE 32208
-#define FILE_LOC "../raw/"
 unsigned char* backByte_;
 
 size_t LoadData(char *filename, char *data)
@@ -194,9 +193,9 @@ SDL_Texture* createImage(GameState* game, unsigned char* data, int w, int h, int
 
 int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
 {
-    if(!LoadData(FILE_LOC "sprites1.raw", &spriteData[0]) ||
-    !LoadData(FILE_LOC "sprites2.raw", &spriteData[13008]) ||
-    !LoadData(FILE_LOC "sprites3.raw", &spriteData[23760])) {
+    if(!LoadData(FILE_LOC "raw/sprites1.raw", &spriteData[0]) ||
+    !LoadData(FILE_LOC "raw/sprites2.raw", &spriteData[13008]) ||
+    !LoadData(FILE_LOC "raw/sprites3.raw", &spriteData[23760])) {
         printf("Failed to load sprites.\n");
         return 0;
     }
@@ -209,7 +208,7 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
     }
     
     unsigned char* bigiceshadow = malloc(257);
-    if(!LoadData(FILE_LOC "bigiceshadow.raw", bigiceshadow)) {
+    if(!LoadData(FILE_LOC "raw/bigiceshadow.raw", bigiceshadow)) {
         printf("Failed to load bigiceshadow.\n");
         free(bigiceshadow);
         return 0;
@@ -241,7 +240,7 @@ int loadSpriteData(unsigned char* spriteData, unsigned char* backByte)
 int loadBlockData(GameState* game, const char *bigfile, unsigned char* backByte)
 {
     char* filename = malloc(256);
-    sprintf(filename ,FILE_LOC "%s", bigfile);
+    sprintf(filename ,FILE_LOC "raw/%s", bigfile);
     size_t fSize = GetFileSize(filename);
     unsigned char* bigdirt = malloc(fSize);
     if(!LoadData(filename, bigdirt)){
@@ -371,9 +370,9 @@ void buildShadows(GameState* game, int color) {
  }
 
 void loadLogo(GameState* game){
-    size_t fSize = GetFileSize(FILE_LOC "logo.raw");
+    size_t fSize = GetFileSize(FILE_LOC "raw/logo.raw");
     unsigned char* logo = malloc(fSize);
-    if(!LoadData(FILE_LOC "logo.raw", logo)){
+    if(!LoadData(FILE_LOC "raw/logo.raw", logo)){
         free(logo);
         return; 
     }

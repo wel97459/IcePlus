@@ -30,3 +30,4 @@ port2C/cmake_install.cmake
 port2C/CMakeCache.txt
 .vscode
 port2C/IcePlus
+port2C/IcePlus*
