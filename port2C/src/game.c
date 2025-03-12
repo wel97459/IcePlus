@@ -3,11 +3,13 @@
 #include <time.h>
 #include "tileloader.h"
 #include "draw.h"
+
 #ifdef __SWITCH__
 const SDL_Rect ScreenSpace = {(WINDOW_WIDTH/2)-(SCREEN_FINALE_WIDTH/2), (WINDOW_HEIGHT/2)-(SCREEN_FINALE_HEIGHT/2), SCREEN_FINALE_WIDTH, SCREEN_FINALE_HEIGHT};
 #else
 const SDL_Rect ScreenSpace = {0, 0, SCREEN_FINALE_WIDTH, SCREEN_FINALE_HEIGHT};
 #endif
+
 const unsigned char levIce[] = {12, 12, 13, 13, 14, 14, 16, 16, 12, 12, 12, 17, 17, 12, 12, 18, 18, 12, 12, 12};
 const unsigned char levRock[] = {7, 7, 7, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6};
 const int offsets[] = {0, -12, 12, -1, 1};
@@ -66,7 +68,9 @@ const char levNames[10][24] = {
 void playSound(GameState* game, int sound)
 {
     //if (game->soundOn != 0) {
-    //Mix_PlayChannel(-1, game->sounds[sound], 0);
+    #ifndef __SWITCH__
+    Mix_PlayChannel(-1, game->sounds[sound], 0);
+    #endif
     //}
 }
 

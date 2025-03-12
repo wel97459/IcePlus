@@ -2,6 +2,7 @@
 #define GAME_H
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 #ifdef __SWITCH__
     #include <switch.h>
@@ -79,7 +80,7 @@ typedef struct {
     SDL_Texture* shadows[SHADOW_COUNT];
     SDL_Texture* logo;
     SDL_Texture* greenBG;
-    //Mix_Chunk* sounds[6];
+    Mix_Chunk* sounds[6];
     IceObject objs[10];
     int selected;
     int sortN;

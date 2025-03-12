@@ -9,11 +9,13 @@
 
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
-    // for (int i = 0; i < 6; i++) {
-    //     char path[50];
-    //     snprintf(path, sizeof(path), "../sounds/sound%d.wav", i);
-    //     game->sounds[i] = Mix_LoadWAV(path);
-    // }
+    #ifndef __SWITCH__
+    for (int i = 0; i < 6; i++) {
+        char path[50];
+        snprintf(path, sizeof(path), "../sounds/sound%d.wav", i);
+        game->sounds[i] = Mix_LoadWAV(path);
+    }
+    #endif
 }
 
 void initGame(GameState* game) {
@@ -27,8 +29,11 @@ void initGame(GameState* game) {
     #endif
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-    
+
+    #ifndef __SWITCH__
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+    #endif
+
     game->window = SDL_CreateWindow(
         "IcePlus", 
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -46,7 +51,7 @@ void initGame(GameState* game) {
     
     TTF_Init();
     
-    game->font = TTF_OpenFont(FILE_LOC "font.ttf", 14);
+    game->font = TTF_OpenFont(FILE_LOC "raw/font.ttf", 14);
     if(game->font == NULL){
         printf("Failed to load Font.\n");
     }
@@ -159,9 +164,11 @@ void cleanup(GameState* game) {
         SDL_DestroyTexture(game->blocks[i]);
     }
 
-    // for (int i = 0; i < 6; i++) {
-    //     Mix_FreeChunk(game->sounds[i]);
-    // }
+    #ifndef __SWITCH__
+    for (int i = 0; i < 6; i++) {
+        Mix_FreeChunk(game->sounds[i]);
+    }
+    #endif
 
     SDL_DestroyTexture(game->logo);
     SDL_DestroyTexture(game->foregoundTexture);
@@ -169,7 +176,9 @@ void cleanup(GameState* game) {
 
     SDL_DestroyRenderer(game->renderer);
     SDL_DestroyWindow(game->window);
-   // Mix_CloseAudio();
+    #ifndef __SWITCH__
+    Mix_CloseAudio();
+    #endif
     SDL_Quit();
 }
 
