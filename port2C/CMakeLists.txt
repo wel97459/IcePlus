@@ -24,24 +24,24 @@ target_include_directories(${PROJECT_NAME} PUBLIC src/)
 # Find required SDL libraries
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 
-if(NOT NINTENDO_SWITCH)
-    find_package(SDL2_mixer REQUIRED)
-    set(USE_LIB_MIXER "SDL2_mixer::SDL2_mixer")
-endif()
-
+include_directories(${SDL2_INCLUDE_DIR} ${SDL2_MIXER_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 
 message(STATUS, ${CMAKE_CURRENT_SOURCE_DIR})
 # Link the libraries to the executable using the correct target names
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE
     SDL2::SDL2
+    SDL2::SDL2main
     SDL2_ttf::SDL2_ttf-static
-    ${USE_LIB_MIXER}
+    SDL2_mixer::SDL2_mixer
+    -lmpg123
+    -lmodplug
     ${NX_LINKER_FLAGS}
     )
 
 if(NINTENDO_SWITCH)
+    #target_link_options(${PROJECT_NAME} PRIVATE -Wl,-z undefs )
     target_compile_definitions(${PROJECT_NAME} PRIVATE __SWITCH__)
     nx_generate_nacp(OUTPUT "${PROJECT_NAME}.nacp" NAME "${PROJECT_NAME}" AUTHOR "wel97459" VERSION "1.0.0")
     nx_create_nro(${PROJECT_NAME} ROMFS "romfs" ICON "res/icon.jpg" NACP "${PROJECT_NAME}.nacp")

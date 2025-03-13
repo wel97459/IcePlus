@@ -68,9 +68,7 @@ const char levNames[10][24] = {
 void playSound(GameState* game, int sound)
 {
     //if (game->soundOn != 0) {
-    #ifndef __SWITCH__
     Mix_PlayChannel(-1, game->sounds[sound], 0);
-    #endif
     //}
 }
 

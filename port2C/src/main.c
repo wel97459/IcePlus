@@ -9,13 +9,11 @@
 
 void loadSounds(GameState* game) {
     // Load sound effects (replace with actual paths)
-    #ifndef __SWITCH__
+    char path[128];
     for (int i = 0; i < 6; i++) {
-        char path[50];
-        snprintf(path, sizeof(path), "../sounds/sound%d.wav", i);
+        snprintf(path, 128, "%ssounds/sound%d.wav", FILE_LOC , i);
         game->sounds[i] = Mix_LoadWAV(path);
     }
-    #endif
 }
 
 void initGame(GameState* game) {
@@ -30,9 +28,7 @@ void initGame(GameState* game) {
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
-    #ifndef __SWITCH__
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-    #endif
 
     game->window = SDL_CreateWindow(
         "IcePlus", 
@@ -164,11 +160,10 @@ void cleanup(GameState* game) {
         SDL_DestroyTexture(game->blocks[i]);
     }
 
-    #ifndef __SWITCH__
     for (int i = 0; i < 6; i++) {
         Mix_FreeChunk(game->sounds[i]);
     }
-    #endif
+
 
     SDL_DestroyTexture(game->logo);
     SDL_DestroyTexture(game->foregoundTexture);
@@ -176,9 +171,9 @@ void cleanup(GameState* game) {
 
     SDL_DestroyRenderer(game->renderer);
     SDL_DestroyWindow(game->window);
-    #ifndef __SWITCH__
+
     Mix_CloseAudio();
-    #endif
+
     SDL_Quit();
 }
 
