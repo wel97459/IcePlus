@@ -37,6 +37,7 @@ target_link_libraries(${PROJECT_NAME}
     SDL2_mixer::SDL2_mixer
     -lmpg123
     -lmodplug
+    -lm
     ${NX_LINKER_FLAGS}
     )
 

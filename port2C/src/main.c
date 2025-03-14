@@ -81,13 +81,13 @@ void handleInput(GameState* game) {
             game->running = false;
         else if(kHeld & HidNpadButton_A)
             game->lastKey = SDLK_RETURN;
-        else if(kHeld & HidNpadButton_Left)
+        else if(kHeld & HidNpadButton_AnyLeft)
             game->lastKey = SDLK_LEFT;
-        else if(kHeld & HidNpadButton_Right)
+        else if(kHeld & HidNpadButton_AnyRight)
             game->lastKey = SDLK_RIGHT;
-        else if(kHeld & HidNpadButton_Up)
+        else if(kHeld & HidNpadButton_AnyUp)
             game->lastKey = SDLK_UP;
-        else if(kHeld & HidNpadButton_Down)
+        else if(kHeld & HidNpadButton_AnyDown)
             game->lastKey = SDLK_DOWN;
         else
             game->lastKey = 0;
