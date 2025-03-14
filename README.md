@@ -6,7 +6,7 @@ This also contains a port of the game to C that is correctly a playable work in 
 Compiling is straight forward:
 
 ```bash
-sudo apt install libSDL2-dev libSDL2_mixer-dev
+sudo apt install libsdl2-dev libsdl2-mixer-dev
 cmake .
 make
 ```
