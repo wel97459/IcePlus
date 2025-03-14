@@ -1,0 +1,3 @@
+[submodule "port2C/vendor/SDL_mixer"]
+	path = port2C/vendor/SDL_mixer
+	url = https://github.com/libsdl-org/SDL_mixer.git

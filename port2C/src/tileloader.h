@@ -1,9 +1,6 @@
 #ifndef TILELOADER_H
 #define TILELOADER_H
-
-#include <SDL.h>
 #include "game.h"
-
 
 extern const int spriteH[];
 extern const int spriteEffH[];

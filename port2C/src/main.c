@@ -6,15 +6,8 @@
 #include "game.h"
 #include "tileloader.h"
 #include "draw.h"
-
-void loadSounds(GameState* game) {
-    // Load sound effects (replace with actual paths)
-    char path[128];
-    for (int i = 0; i < 6; i++) {
-        snprintf(path, 128, "%ssounds/sound%d.wav", FILE_LOC , i);
-        game->sounds[i] = Mix_LoadWAV(path);
-    }
-}
+#include "sound.h"
+#include "csid.h"
 
 void initGame(GameState* game) {
     
@@ -28,7 +21,7 @@ void initGame(GameState* game) {
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+    Mix_OpenAudio(DEFAULT_SAMPLERATE, MIX_DEFAULT_FORMAT, 1, 2048);
 
     game->window = SDL_CreateWindow(
         "IcePlus", 
@@ -56,6 +49,9 @@ void initGame(GameState* game) {
     loadSprites(game);
     loadLogo(game);
     loadSounds(game);
+
+    cSID_LoadSID(FILE_LOC "raw/Iceblox_Plus.sid");
+    Mix_HookMusic(cSID_play, NULL);
 
     game->running = true;
     game->foregoundTexture = drawNewTexture(game);
@@ -256,7 +252,7 @@ int main(int argc, char* argv[]) {
         }
         SDL_RenderPresent(game.renderer);
         end_time = SDL_GetTicks();
-        delay_time = 1000 / 20 - (end_time - start_time);
+        delay_time = 1000 / 15 - (end_time - start_time);
         if(delay_time > 100) delay_time = 100;
         if (delay_time > 0) {
             SDL_Delay(delay_time);

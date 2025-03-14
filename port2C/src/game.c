@@ -3,6 +3,7 @@
 #include <time.h>
 #include "tileloader.h"
 #include "draw.h"
+#include "sound.h"
 
 #ifdef __SWITCH__
 const SDL_Rect ScreenSpace = {(WINDOW_WIDTH/2)-(SCREEN_FINALE_WIDTH/2), (WINDOW_HEIGHT/2)-(SCREEN_FINALE_HEIGHT/2), SCREEN_FINALE_WIDTH, SCREEN_FINALE_HEIGHT};
@@ -63,14 +64,6 @@ const char levNames[10][24] = {
     "bigboxes.raw",
     "bigbooks.raw"
 };
-
-
-void playSound(GameState* game, int sound)
-{
-    //if (game->soundOn != 0) {
-    Mix_PlayChannel(-1, game->sounds[sound], 0);
-    //}
-}
 
 int addObject(GameState* game, int type, int pos, int look, int dir) 
 {

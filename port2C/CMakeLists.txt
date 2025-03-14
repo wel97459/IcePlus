@@ -41,7 +41,7 @@ target_link_libraries(${PROJECT_NAME}
     )
 
 if(NINTENDO_SWITCH)
-    #target_link_options(${PROJECT_NAME} PRIVATE -Wl,-z undefs )
+    target_link_options(${PROJECT_NAME} PRIVATE -Wl,-z undefs )
     target_compile_definitions(${PROJECT_NAME} PRIVATE __SWITCH__)
     nx_generate_nacp(OUTPUT "${PROJECT_NAME}.nacp" NAME "${PROJECT_NAME}" AUTHOR "wel97459" VERSION "1.0.0")
     nx_create_nro(${PROJECT_NAME} ROMFS "romfs" ICON "res/icon.jpg" NACP "${PROJECT_NAME}.nacp")
