@@ -24,19 +24,23 @@ target_include_directories(${PROJECT_NAME} PUBLIC src/)
 # Find required SDL libraries
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
-find_package(SDL2_mixer REQUIRED)
+# find_package(SDL2_mixer REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIR} ${SDL2_MIXER_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 
 message(STATUS, ${CMAKE_CURRENT_SOURCE_DIR})
 # Link the libraries to the executable using the correct target names
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
     SDL2::SDL2
     SDL2::SDL2main
     SDL2_ttf::SDL2_ttf-static
-    SDL2_mixer::SDL2_mixer
+    -lSDL2_mixer
     -lmpg123
     -lmodplug
+    -logg
+    -lopus
+    -lopusfile
+    -lopusurl
     -lm
     ${NX_LINKER_FLAGS}
     )
