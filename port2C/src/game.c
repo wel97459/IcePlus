@@ -4,6 +4,7 @@
 #include "tileloader.h"
 #include "draw.h"
 #include "sound.h"
+#include "csid.h"
 
 #ifdef __SWITCH__
 const SDL_Rect ScreenSpace = {(WINDOW_WIDTH/2)-(SCREEN_FINALE_WIDTH/2), (WINDOW_HEIGHT/2)-(SCREEN_FINALE_HEIGHT/2), SCREEN_FINALE_WIDTH, SCREEN_FINALE_HEIGHT};
@@ -556,6 +557,7 @@ void updateBreakBlock(GameState* game, int objNum){
         game->coins++;
         updateScore(game, 25);
         if (game->coins == 5) {
+            cSID_initSubtune(&game->csid, 2);
             player->look = 1;
             game->gameMode = 7;
             game->counter = 0;

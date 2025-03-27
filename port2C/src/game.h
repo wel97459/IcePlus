@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#include "csid.h"
 
 #ifdef __SWITCH__
     #include <switch.h>
@@ -81,6 +82,7 @@ typedef struct {
     SDL_Texture* logo;
     SDL_Texture* greenBG;
     Mix_Chunk* sounds[6];
+    cSID csid;
     IceObject objs[10];
     int selected;
     int sortN;

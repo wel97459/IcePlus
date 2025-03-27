@@ -3,10 +3,10 @@
 #include "sound.h"
 #include "csid.h"
 
-#ifdef __SWITCH__
-    #undef Mix_LoadWAV
-    #define Mix_LoadWAV Mix_LoadWAV_MINE
-#endif
+// #ifdef __SWITCH__
+//     #undef Mix_LoadWAV
+//     #define Mix_LoadWAV Mix_LoadWAV_MINE
+// #endif
 
 void playSound(GameState* game, int sound)
 {
@@ -21,6 +21,7 @@ void loadSounds(GameState* game) {
     for (int i = 0; i < 6; i++) {
         snprintf(path, 128, "%ssounds/sound%d.wav", FILE_LOC , i);
         game->sounds[i] = Mix_LoadWAV(path);
+        Mix_VolumeChunk(game->sounds[i], 32);
     }
 }
 

@@ -50,8 +50,8 @@ void initGame(GameState* game) {
     loadLogo(game);
     loadSounds(game);
 
-    cSID_LoadSID(FILE_LOC "raw/Iceblox_Plus.sid");
-    Mix_HookMusic(cSID_play, NULL);
+    game->csid = cSID_LoadSID(FILE_LOC "raw/Iceblox_Plus.sid");
+    Mix_HookMusic(cSID_play, &game->csid);
 
     game->running = true;
     game->foregoundTexture = drawNewTexture(game);
@@ -223,6 +223,7 @@ int main(int argc, char* argv[]) {
                     prepareLevel(&game);
                     game.gameMode = 4;
                     resetGameClip(&game);
+                    cSID_initSubtune(&game.csid, 1);
                 }
             break;
             case MainGameLoop:
@@ -233,10 +234,12 @@ int main(int argc, char* argv[]) {
             case FinshedLevel:
                 game.objs[0].look = (game.counter & 4) >> 2;
                 renderMainGame(&game);
-                if (game.counter == 10) {
-                    playSound(&game, 4);
-                }
-                if (game.counter > 50) {
+                if(game.counter == 1)
+                    cSID_initSubtune(&game.csid, 2);
+                // if (game.counter == 10) {
+                //     playSound(&game, 4);
+                // }
+                if (game.counter > 80) {
                     game.level++;
                     resetGameClip(&game);
                     game.gameMode = PrepareGameLevel;
