@@ -37,9 +37,9 @@ const Uint8 FILTSW[9] = {1,2,4,1,2,4,1,2,4};
 // float ratecnt[9], csid->sid.cutoff_ratio_8580, csid->sid.cutoff_steepness_6581, csid->sid.cap_6581_reciprocal; //, cutoff_ratio_6581, cutoff_bottom_6581, cutoff_top_6581;
 //CPU (and CIA/VIC-IRQ) emulation constants and variables - avoiding internal/automatic variables to retain speed
 const Uint8 flagsw[]={0x01,0x21,0x04,0x24,0x00,0x40,0x08,0x28}, branchflag[]={0x80,0x40,0x01,0x02};
-// unsigned int PC=0, pPC=0, addr=0, csid->cpu.storadd=0;
+// unsigned int c->PC=0, pc->PC=0, addr=0, csid->cpu.storadd=0;
 // short int A=0, T=0, SP=0xFF; 
-// Uint8 X=0, Y=0, IR=0, ST=0x00;  //STATUS-flags: N V - B D I Z C
+// Uint8 X=0, Y=0, c->IR=0, ST=0x00;  //STATUS-flags: N V - B D I Z C
 // float CPUtime=0.0;
 // char cycles=0, finished=0, dynCIA=0;
 
@@ -216,12 +216,12 @@ void cSID_play(void* userdata, Uint8 *stream, int len ) //called by SDL at csid-
             csid->finished=0;
             csid->cpu.PC=csid->playaddr;
             csid->cpu.SP=0xFF;
-            printf("%f\n",csid->framecnt);
+            printf("freamcnt:%f  PC:%04X\n",csid->framecnt, csid->cpu.PC);
         }  
         if (csid->finished==0) { 
             while (csid->cpu.CPUtime<=csid->clock_ratio) { 
                  Uint16 pPC=csid->cpu.PC; 
-                if (cSID_CPU(csid)>=0xFE || ((csid->memory[1]&3)>1 && pPC<0xE000 && (csid->cpu.PC==0xEA31 || csid->cpu.PC==0xEA81))) {
+                if (cSID_CPU(csid)>=0xFE || ((csid->memory[1]&3)>1 && pPC<0xE000 && (pPC==0xEA31 || pPC==0xEA81))) {
                     csid->finished=1;
                     break;
                 } else { 
@@ -274,149 +274,130 @@ void cSID_initCPU (cSID* csid, uint16_t mempos) {
  //Thanks to the hardware being in my mind when coding this, the illegal instructions could be added fairly easily...
 uint8_t cSID_CPU (cSID* csid) //the CPU emulation for SID/PRG playback (ToDo: CIA/VIC-IRQ/NMI/RESET vectors, BCD-mode)
 { //'IR' is the instruction-register, naming after the hardware-equivalent
-  uint16_t storadd = csid->cpu.storadd = 0;
-  uint16_t PC = csid->cpu.PC;
-  uint16_t SP = csid->cpu.SP;
-  short int A = csid->cpu.A;
-  short int T = csid->cpu.T;
-  uint8_t ST = csid->cpu.ST;
-  uint8_t X = csid->cpu.X;
-  uint8_t Y = csid->cpu.Y;
-  uint16_t addr = csid->cpu.addr;
-  uint8_t cycles = csid->cpu.cycles;
-  uint8_t IR = csid->cpu.IR;
+  struct cSID_CPU_s *c = &csid->cpu;
+  if(c->PC>0)printf("PC:%04X D:%02X\n", c->PC, csid->memory[c->PC]);
   uint8_t ret=0;
-  IR=csid->memory[PC]; cycles=2; csid->cpu.storadd=0; //'cycle': ensure smallest 6510 runtime (for implied/register instructions)
-  if(IR&1) {  //nybble2:  1/5/9/D:accu.instructions, 3/7/B/F:illegal ocsid->cpu.pcodes
-   switch (IR&0x1F) { //addressing modes (begin with more complex cases), PC wraparound not handled inside to save codespace
-    case 1: case 3: PC++; addr = csid->memory[csid->memory[PC]+X] + csid->memory[csid->memory[PC]+X+1]*256; cycles=6; break; //(zp,x)
-    case 0x11: case 0x13: PC++; addr = csid->memory[csid->memory[PC]] + csid->memory[csid->memory[PC]+1]*256 + Y; cycles=6; break; //(zp),y (5..6 cycles, 8 for R-M-W)
-    case 0x19: case 0x1B: PC++; addr=csid->memory[PC]; PC++; addr+=csid->memory[PC]*256 + Y; cycles=5; break; //abs,y //(4..5 cycles, 7 cycles for R-M-W)
-    case 0x1D: PC++; addr=csid->memory[PC]; PC++; addr+=csid->memory[PC]*256 + X; cycles=5; break; //abs,x //(4..5 cycles, 7 cycles for R-M-W)
-    case 0xD: case 0xF: PC++; addr=csid->memory[PC]; PC++; addr+=csid->memory[PC]*256; cycles=4; break; //abs
-    case 0x15: PC++; addr = csid->memory[PC] + X; cycles=4; break; //zp,x
-    case 5: case 7: PC++; addr = csid->memory[PC]; cycles=3; break; //zp
-    case 0x17: PC++; if ((IR&0xC0)!=0x80) { addr = csid->memory[PC] + X; cycles=4; } //zp,x for illegal ocsid->cpu.pcodes
-               else { addr = csid->memory[PC] + Y; cycles=4; }  break; //zp,y for LAX/SAX illegal ocsid->cpu.pcodes
-    case 0x1F: PC++; if ((IR&0xC0)!=0x80) { addr = csid->memory[PC] + csid->memory[++PC]*256 + X; cycles=5; } //abs,x for illegal ocsid->cpu.pcodes
-               else { addr = csid->memory[PC] + csid->memory[++PC]*256 + Y; cycles=5; }  break; //abs,y for LAX/SAX illegal ocsid->cpu.pcodes
-    case 9: case 0xB: PC++; addr = PC; cycles=2;  //immediate
+  c->IR=csid->memory[c->PC]; c->cycles=2; csid->cpu.storadd=0; //'cycle': ensure smallest 6510 runtime (for implied/register instructions)
+  if(c->IR&1) {  //nybble2:  1/5/9/D:accu.instructions, 3/7/B/F:illegal ocsid->cpu.pcodes
+   switch (c->IR&0x1F) { //addressing modes (begin with more complex cases), PC wraparound not handled inside to save codespace
+    case 1: case 3: c->PC++; c->addr = csid->memory[csid->memory[c->PC]+c->X] + csid->memory[csid->memory[c->PC]+c->X+1]*256; c->cycles=6; break; //(zp,x)
+    case 0x11: case 0x13: c->PC++; c->addr = csid->memory[csid->memory[c->PC]] + csid->memory[csid->memory[c->PC]+1]*256 + c->Y; c->cycles=6; break; //(zp),y (5..6 cycles, 8 for R-M-W)
+    case 0x19: case 0x1B: c->PC++; c->addr=csid->memory[c->PC]; c->PC++; c->addr+=csid->memory[c->PC]*256 + c->Y; c->cycles=5; break; //abs,y //(4..5 cycles, 7 cycles for R-M-W)
+    case 0x1D: c->PC++; c->addr=csid->memory[c->PC]; c->PC++; c->addr+=csid->memory[c->PC]*256 + c->X; c->cycles=5; break; //abs,c->x //(4..5 cycles, 7 cycles for R-M-W)
+    case 0xD: case 0xF: c->PC++; c->addr=csid->memory[c->PC]; c->PC++; c->addr+=csid->memory[c->PC]*256; c->cycles=4; break; //abs
+    case 0x15: c->PC++; c->addr = csid->memory[c->PC] + c->X; c->cycles=4; break; //zp,x
+    case 5: case 7: c->PC++; c->addr = csid->memory[c->PC]; c->cycles=3; break; //zp
+    case 0x17: c->PC++; if ((c->IR&0xC0)!=0x80) { c->addr = csid->memory[c->PC] + c->X; c->cycles=4; } //zp,c->x for illegal ocsid->cpu.pcodes
+               else { c->addr = csid->memory[c->PC] + c->Y; c->cycles=4; }  break; //zp,y for LAX/SAX illegal ocsid->cpu.pcodes
+    case 0x1F: c->PC++; if ((c->IR&0xC0)!=0x80) { c->addr = csid->memory[c->PC] + csid->memory[++c->PC]*256 + c->X; c->cycles=5; } //abs,c->x for illegal ocsid->cpu.pcodes
+               else { c->addr = csid->memory[c->PC] + csid->memory[++c->PC]*256 + c->Y; c->cycles=5; }  break; //abs,y for LAX/SAX illegal ocsid->cpu.pcodes
+    case 9: case 0xB: c->PC++; c->addr = c->PC; c->cycles=2;  //immediate
    }
- addr&=0xFFFF;
-   switch (IR&0xE0) {
-    case 0x60: if ((IR&0x1F)!=0xB) { if((IR&3)==3) {T=(csid->memory[addr]>>1)+(ST&1)*128; ST&=124; ST|=(T&1); csid->memory[addr]=T; cycles+=2;}   //ADC / RRA (ROR+ADC)
-                T=A; A+=csid->memory[addr]+(ST&1); ST&=60; ST|=(A&128)|(A>255); A&=0xFF; ST |= (!A)<<1 | ( !((T^csid->memory[addr])&0x80) & ((T^A)&0x80) ) >> 1; }
-               else { A&=csid->memory[addr]; T+=csid->memory[addr]+(ST&1); ST&=60; ST |= (T>255) | ( !((A^csid->memory[addr])&0x80) & ((T^A)&0x80) ) >> 1; //V-flag set by intermediate ADC mechanism: (A&mem)+mem
-                T=A; A=(A>>1)+(ST&1)*128; ST|=(A&128)|(T>127); ST|=(!A)<<1; }  break; // ARR (AND+ROR, bit0 not going to C, but C and bit7 get exchanged.)
-    case 0xE0: if((IR&3)==3 && (IR&0x1F)!=0xB) {csid->memory[addr]++;cycles+=2;}  T=A; A-=csid->memory[addr]+!(ST&1); //SBC / ISC(ISB)=INC+SBC
-               ST&=60; ST|=(A&128)|(A>=0); A&=0xFF; ST |= (!A)<<1 | ( ((T^csid->memory[addr])&0x80) & ((T^A)&0x80) ) >> 1; break; 
-    case 0xC0: if((IR&0x1F)!=0xB) { if ((IR&3)==3) {csid->memory[addr]--; cycles+=2;}  T=A-csid->memory[addr]; } // CMP / DCP(DEC+CMP)
-               else {X=T=(A&X)-csid->memory[addr];} /*SBX(AXS)*/  ST&=124;ST|=(!(T&0xFF))<<1|(T&128)|(T>=0);  break;  //SBX (AXS) (CMP+DEX at the same time)
-    case 0x00: if ((IR&0x1F)!=0xB) { if ((IR&3)==3) {ST&=124; ST|=(csid->memory[addr]>127); csid->memory[addr]<<=1; cycles+=2;}  
-                A|=csid->memory[addr]; ST&=125;ST|=(!A)<<1|(A&128); } //ORA / SLO(ASO)=ASL+ORA
-               else {A&=csid->memory[addr]; ST&=124;ST|=(!A)<<1|(A&128)|(A>127);}  break; //ANC (AND+Carry=bit7)
-    case 0x20: if ((IR&0x1F)!=0xB) { if ((IR&3)==3) {T=(csid->memory[addr]<<1)+(ST&1); ST&=124; ST|=(T>255); T&=0xFF; csid->memory[addr]=T; cycles+=2;}  
-                A&=csid->memory[addr]; ST&=125; ST|=(!A)<<1|(A&128); }  //AND / RLA (ROL+AND)
-               else {A&=csid->memory[addr]; ST&=124;ST|=(!A)<<1|(A&128)|(A>127);}  break; //ANC (AND+Carry=bit7)
-    case 0x40: if ((IR&0x1F)!=0xB) { if ((IR&3)==3) {ST&=124; ST|=(csid->memory[addr]&1); csid->memory[addr]>>=1; cycles+=2;}
-                A^=csid->memory[addr]; ST&=125;ST|=(!A)<<1|(A&128); } //EOR / SRE(LSE)=LSR+EOR
-                else {A&=csid->memory[addr]; ST&=124; ST|=(A&1); A>>=1; A&=0xFF; ST|=(A&128)|((!A)<<1); }  break; //ALR(ASR)=(AND+LSR)
-    case 0xA0: if ((IR&0x1F)!=0x1B) { A=csid->memory[addr]; if((IR&3)==3) X=A; } //LDA / LAX (illegal, used by my 1 rasterline player) 
-               else {A=X=SP=csid->memory[addr]&SP;} /*LAS(LAR)*/  ST&=125; ST|=((!A)<<1) | (A&128); break;  // LAS (LAR)
-    case 0x80: if ((IR&0x1F)==0xB) { A = X & csid->memory[addr]; ST&=125; ST|=(A&128) | ((!A)<<1); } //XAA (TXA+AND), highly unstable on real 6502!
-               else if ((IR&0x1F)==0x1B) { SP=A&X; csid->memory[addr]=SP&((addr>>8)+1); } //TAS(SHS) (SP=A&X, mem=S&H} - unstable on real 6502
-               else {csid->memory[addr]=A & (((IR&3)==3)?X:0xFF); storadd=addr;}  break; //STA / SAX (at times same as AHX/SHX/SHY) (illegal) 
+ c->addr&=0xFFFF;
+   switch (c->IR&0xE0) {
+    case 0x60: if ((c->IR&0x1F)!=0xB) { if((c->IR&3)==3) {c->T=(csid->memory[c->addr]>>1)+(c->ST&1)*128; c->ST&=124; c->ST|=(c->T&1); csid->memory[c->addr]=c->T; c->cycles+=2;}   //ADC / RRA (ROR+ADC)
+                c->T=c->A; c->A+=csid->memory[c->addr]+(c->ST&1); c->ST&=60; c->ST|=(c->A&128)|(c->A>255); c->A&=0xFF; c->ST |= (!c->A)<<1 | ( !((c->T^csid->memory[c->addr])&0x80) & ((c->T^c->A)&0x80) ) >> 1; }
+               else { c->A&=csid->memory[c->addr]; c->T+=csid->memory[c->addr]+(c->ST&1); c->ST&=60; c->ST |= (c->T>255) | ( !((c->A^csid->memory[c->addr])&0x80) & ((c->T^c->A)&0x80) ) >> 1; //V-flag set by intermediate ADC mechanism: (c->A&mem)+mem
+                c->T=c->A; c->A=(c->A>>1)+(c->ST&1)*128; c->ST|=(c->A&128)|(c->T>127); c->ST|=(!c->A)<<1; }  break; // ARR (AND+ROR, bit0 not going to C, but C and bit7 get exchanged.)
+    case 0xE0: if((c->IR&3)==3 && (c->IR&0x1F)!=0xB) {csid->memory[c->addr]++;c->cycles+=2;}  c->T=c->A; c->A-=csid->memory[c->addr]+!(c->ST&1); //SBC / ISC(ISB)=INC+SBC
+               c->ST&=60; c->ST|=(c->A&128)|(c->A>=0); c->A&=0xFF; c->ST |= (!c->A)<<1 | ( ((c->T^csid->memory[c->addr])&0x80) & ((c->T^c->A)&0x80) ) >> 1; break; 
+    case 0xC0: if((c->IR&0x1F)!=0xB) { if ((c->IR&3)==3) {csid->memory[c->addr]--; c->cycles+=2;}  c->T=c->A-csid->memory[c->addr]; } // CMP / DCP(DEC+CMP)
+               else {c->X=c->T=(c->A&c->X)-csid->memory[c->addr];} /*SBX(AXS)*/  c->ST&=124;c->ST|=(!(c->T&0xFF))<<1|(c->T&128)|(c->T>=0);  break;  //SBX (AXS) (CMP+DEX at the same time)
+    case 0x00: if ((c->IR&0x1F)!=0xB) { if ((c->IR&3)==3) {c->ST&=124; c->ST|=(csid->memory[c->addr]>127); csid->memory[c->addr]<<=1; c->cycles+=2;}  
+                c->A|=csid->memory[c->addr]; c->ST&=125;c->ST|=(!c->A)<<1|(c->A&128); } //ORA / SLO(ASO)=ASL+ORA
+               else {c->A&=csid->memory[c->addr]; c->ST&=124;c->ST|=(!c->A)<<1|(c->A&128)|(c->A>127);}  break; //ANC (AND+Carry=bit7)
+    case 0x20: if ((c->IR&0x1F)!=0xB) { if ((c->IR&3)==3) {c->T=(csid->memory[c->addr]<<1)+(c->ST&1); c->ST&=124; c->ST|=(c->T>255); c->T&=0xFF; csid->memory[c->addr]=c->T; c->cycles+=2;}  
+                c->A&=csid->memory[c->addr]; c->ST&=125; c->ST|=(!c->A)<<1|(c->A&128); }  //AND / RLA (ROL+AND)
+               else {c->A&=csid->memory[c->addr]; c->ST&=124;c->ST|=(!c->A)<<1|(c->A&128)|(c->A>127);}  break; //ANC (AND+Carry=bit7)
+    case 0x40: if ((c->IR&0x1F)!=0xB) { if ((c->IR&3)==3) {c->ST&=124; c->ST|=(csid->memory[c->addr]&1); csid->memory[c->addr]>>=1; c->cycles+=2;}
+                c->A^=csid->memory[c->addr]; c->ST&=125;c->ST|=(!c->A)<<1|(c->A&128); } //EOR / SRE(LSE)=LSR+EOR
+                else {c->A&=csid->memory[c->addr]; c->ST&=124; c->ST|=(c->A&1); c->A>>=1; c->A&=0xFF; c->ST|=(c->A&128)|((!c->A)<<1); }  break; //ALR(ASR)=(AND+LSR)
+    case 0xA0: if ((c->IR&0x1F)!=0x1B) { c->A=csid->memory[c->addr]; if((c->IR&3)==3) c->X=c->A; } //LDA / LAX (illegal, used by my 1 rasterline player) 
+               else {c->A=c->X=c->SP=csid->memory[c->addr]&c->SP;} /*LAS(LAR)*/  c->ST&=125; c->ST|=((!c->A)<<1) | (c->A&128); break;  // LAS (LAR)
+    case 0x80: if ((c->IR&0x1F)==0xB) { c->A = c->X & csid->memory[c->addr]; c->ST&=125; c->ST|=(c->A&128) | ((!c->A)<<1); } //XAA (TXA+AND), highly unstable on real 6502!
+               else if ((c->IR&0x1F)==0x1B) { c->SP=c->A&c->X; csid->memory[c->addr]=c->SP&((c->addr>>8)+1); } //TAS(SHS) (SP=c->A&c->X, mem=S&H} - unstable on real 6502
+               else {csid->memory[c->addr]=c->A & (((c->IR&3)==3)?c->X:0xFF); c->storadd=c->addr;}  break; //STA / SAX (at times same as AHX/SHX/SHY) (illegal) 
    }
   }
   
-  else if(IR&2) {  //nybble2:  2:illegal/LDX, 6:A/X/INC/DEC, A:Accu-shift/reg.transfer/NOP, E:shift/X/INC/DEC
-   switch (IR&0x1F) { //addressing modes
-    case 0x1E: PC++; addr=csid->memory[PC]; PC++; addr+=csid->memory[PC]*256 + ( ((IR&0xC0)!=0x80) ? X:Y ); cycles=5; break; //abs,x / abs,y
-    case 0xE: PC++; addr=csid->memory[PC]; PC++; addr+=csid->memory[PC]*256; cycles=4; break; //abs
-    case 0x16: PC++; addr = csid->memory[PC] + ( ((IR&0xC0)!=0x80) ? X:Y ); cycles=4; break; //zp,x / zp,y
-    case 6: PC++; addr = csid->memory[PC]; cycles=3; break; //zp
-    case 2: PC++; addr = PC; cycles=2;  //imm.
+  else if(c->IR&2) {  //nybble2:  2:illegal/LDX, 6:c->A/c->X/INC/DEC, A:Accu-shift/reg.transfer/NOP, E:shift/c->X/INC/DEC
+   switch (c->IR&0x1F) { //addressing modes
+    case 0x1E: c->PC++; c->addr=csid->memory[c->PC]; c->PC++; c->addr+=csid->memory[c->PC]*256 + ( ((c->IR&0xC0)!=0x80) ? c->X:c->Y ); c->cycles=5; break; //abs,c->x / abs,y
+    case 0xE: c->PC++; c->addr=csid->memory[c->PC]; c->PC++; c->addr+=csid->memory[c->PC]*256; c->cycles=4; break; //abs
+    case 0x16: c->PC++; c->addr = csid->memory[c->PC] + ( ((c->IR&0xC0)!=0x80) ? c->X:c->Y ); c->cycles=4; break; //zp,c->x / zp,y
+    case 6: c->PC++; c->addr = csid->memory[c->PC]; c->cycles=3; break; //zp
+    case 2: c->PC++; c->addr = c->PC; c->cycles=2;  //imm.
    }  
-   addr&=0xFFFF; 
-   switch (IR&0xE0) {
-    case 0x00: ST&=0xFE; case 0x20: if((IR&0xF)==0xA) { A=(A<<1)+(ST&1); ST&=124;ST|=(A&128)|(A>255); A&=0xFF; ST|=(!A)<<1; } //ASL/ROL (Accu)
-      else { T=(csid->memory[addr]<<1)+(ST&1); ST&=124;ST|=(T&128)|(T>255); T&=0xFF; ST|=(!T)<<1; csid->memory[addr]=T; cycles+=2; }  break; //RMW (Read-Write-Modify)
-    case 0x40: ST&=0xFE; case 0x60: if((IR&0xF)==0xA) { T=A; A=(A>>1)+(ST&1)*128; ST&=124;ST|=(A&128)|(T&1); A&=0xFF; ST|=(!A)<<1; } //LSR/ROR (Accu)
-      else { T=(csid->memory[addr]>>1)+(ST&1)*128; ST&=124;ST|=(T&128)|(csid->memory[addr]&1); T&=0xFF; ST|=(!T)<<1; csid->memory[addr]=T; cycles+=2; }  break; //csid->memory (RMW)
-    case 0xC0: if(IR&4) { csid->memory[addr]--; ST&=125;ST|=(!csid->memory[addr])<<1|(csid->memory[addr]&128); cycles+=2; } //DEC
-      else {X--; X&=0xFF; ST&=125;ST|=(!X)<<1|(X&128);}  break; //DEX
-    case 0xA0: if((IR&0xF)!=0xA) X=csid->memory[addr];  else if(IR&0x10) {X=SP;break;}  else X=A;  ST&=125;ST|=(!X)<<1|(X&128);  break; //LDX/TSX/TAX
-    case 0x80: if(IR&4) {csid->memory[addr]=X;storadd=addr;}  else if(IR&0x10) SP=X;  else {A=X; ST&=125;ST|=(!A)<<1|(A&128);}  break; //STX/TXS/TXA
-    case 0xE0: if(IR&4) { csid->memory[addr]++; ST&=125;ST|=(!csid->memory[addr])<<1|(csid->memory[addr]&128); cycles+=2; } //INC/NOP
+   c->addr&=0xFFFF; 
+   switch (c->IR&0xE0) {
+    case 0x00: c->ST&=0xFE; case 0x20: if((c->IR&0xF)==0xA) { c->A=(c->A<<1)+(c->ST&1); c->ST&=124;c->ST|=(c->A&128)|(c->A>255); c->A&=0xFF; c->ST|=(!c->A)<<1; } //ASL/ROL (Accu)
+      else { c->T=(csid->memory[c->addr]<<1)+(c->ST&1); c->ST&=124;c->ST|=(c->T&128)|(c->T>255); c->T&=0xFF; c->ST|=(!c->T)<<1; csid->memory[c->addr]=c->T; c->cycles+=2; }  break; //RMW (Read-Write-Modify)
+    case 0x40: c->ST&=0xFE; case 0x60: if((c->IR&0xF)==0xA) { c->T=c->A; c->A=(c->A>>1)+(c->ST&1)*128; c->ST&=124;c->ST|=(c->A&128)|(c->T&1); c->A&=0xFF; c->ST|=(!c->A)<<1; } //LSR/ROR (Accu)
+      else { c->T=(csid->memory[c->addr]>>1)+(c->ST&1)*128; c->ST&=124;c->ST|=(c->T&128)|(csid->memory[c->addr]&1); c->T&=0xFF; c->ST|=(!c->T)<<1; csid->memory[c->addr]=c->T; c->cycles+=2; }  break; //csid->memory (RMW)
+    case 0xC0: if(c->IR&4) { csid->memory[c->addr]--; c->ST&=125;c->ST|=(!csid->memory[c->addr])<<1|(csid->memory[c->addr]&128); c->cycles+=2; } //DEC
+      else {c->X--; c->X&=0xFF; c->ST&=125;c->ST|=(!c->X)<<1|(c->X&128);}  break; //DEX
+    case 0xA0: if((c->IR&0xF)!=0xA) c->X=csid->memory[c->addr];  else if(c->IR&0x10) {c->X=c->SP;break;}  else c->X=c->A;  c->ST&=125;c->ST|=(!c->X)<<1|(c->X&128);  break; //LDX/TSX/TAX
+    case 0x80: if(c->IR&4) {csid->memory[c->addr]=c->X;c->storadd=c->addr;}  else if(c->IR&0x10) c->SP=c->X;  else {c->A=c->X; c->ST&=125;c->ST|=(!c->A)<<1|(c->A&128);}  break; //STX/TXS/TXA
+    case 0xE0: if(c->IR&4) { csid->memory[c->addr]++; c->ST&=125;c->T|=(!csid->memory[c->addr])<<1|(csid->memory[c->addr]&128); c->cycles+=2; } //INC/NOP
    }
   }
   
-  else if((IR&0xC)==8) {  //nybble2:  8:register/status
-   switch (IR&0xF0) {
-    case 0x60: SP++; SP&=0xFF; A=csid->memory[0x100+SP]; ST&=125;ST|=(!A)<<1|(A&128); cycles=4; break; //PLA
-    case 0xC0: Y++; Y&=0xFF; ST&=125;ST|=(!Y)<<1|(Y&128); break; //INY
-    case 0xE0: X++; X&=0xFF; ST&=125;ST|=(!X)<<1|(X&128); break; //INX
-    case 0x80: Y--; Y&=0xFF; ST&=125;ST|=(!Y)<<1|(Y&128); break; //DEY
-    case 0x00: csid->memory[0x100+SP]=ST; SP--; SP&=0xFF; cycles=3; break; //PHP
-    case 0x20: SP++; SP&=0xFF; ST=csid->memory[0x100+SP]; cycles=4; break; //PLP
-    case 0x40: csid->memory[0x100+SP]=A; SP--; SP&=0xFF; cycles=3; break; //PHA
-    case 0x90: A=Y; ST&=125;ST|=(!A)<<1|(A&128); break; //TYA
-    case 0xA0: Y=A; ST&=125;ST|=(!Y)<<1|(Y&128); break; //TAY
-    default: if(flagsw[IR>>5]&0x20) ST|=(flagsw[IR>>5]&0xDF); else ST&=255-(flagsw[IR>>5]&0xDF);  //CLC/SEC/CLI/SEI/CLV/CLD/SED
+  else if((c->IR&0xC)==8) {  //nybble2:  8:register/status
+   switch (c->IR&0xF0) {
+    case 0x60: c->SP++; c->SP&=0xFF; c->A=csid->memory[0x100+c->SP]; c->ST&=125;c->ST|=(!c->A)<<1|(c->A&128); c->cycles=4; break; //PLA
+    case 0xC0: c->Y++; c->Y&=0xFF; c->ST&=125;c->ST|=(!c->Y)<<1|(c->Y&128); break; //INY
+    case 0xE0: c->X++; c->X&=0xFF; c->ST&=125;c->ST|=(!c->X)<<1|(c->X&128); break; //INX
+    case 0x80: c->Y--; c->Y&=0xFF; c->ST&=125;c->ST|=(!c->Y)<<1|(c->Y&128); break; //DEY
+    case 0x00: csid->memory[0x100+c->SP]=c->ST; c->SP--; c->SP&=0xFF; c->cycles=3; break; //PHP
+    case 0x20: c->SP++; c->SP&=0xFF; c->ST=csid->memory[0x100+c->SP]; c->cycles=4; break; //PLP
+    case 0x40: csid->memory[0x100+c->SP]=c->A; c->SP--; c->SP&=0xFF; c->cycles=3; break; //PHA
+    case 0x90: c->A=c->Y; c->ST&=125;c->ST|=(!c->A)<<1|(c->A&128); break; //TYA
+    case 0xA0: c->Y=c->A; c->ST&=125;c->ST|=(!c->Y)<<1|(c->Y&128); break; //TAY
+    default: if(flagsw[c->IR>>5]&0x20) c->ST|=(flagsw[c->IR>>5]&0xDF); else c->ST&=255-(flagsw[c->IR>>5]&0xDF);  //CLC/SEC/CLI/SEI/CLV/CLD/SED
    }
   }
   
   else {  //nybble2:  0: control/branch/Y/compare  4: Y/compare  C:Y/compare/JMP
-   if ((IR&0x1F)==0x10) { PC++; T=csid->memory[PC]; if(T&0x80) T-=0x100; //BPL/BMI/BVC/BVS/BCC/BCS/BNE/BEQ  relative branch 
-    if(IR&0x20) {if (ST&branchflag[IR>>6]) {PC+=T;cycles=3;}} else {if (!(ST&branchflag[IR>>6])) {PC+=T;cycles=3;}}  } 
+   if ((c->IR&0x1F)==0x10) { c->PC++; c->T=csid->memory[c->PC]; if(c->T&0x80) c->T-=0x100; //BPL/BMI/BVC/BVS/BCC/BCS/BNE/BEQ  relative branch 
+    if(c->IR&0x20) {if (c->ST&branchflag[c->IR>>6]) {c->PC+=c->T;c->cycles=3;}} else {if (!(c->ST&branchflag[c->IR>>6])) {c->PC+=c->T;c->cycles=3;}}  } 
    else {  //nybble2:  0:Y/control/Y/compare  4:Y/compare  C:Y/compare/JMP
-    switch (IR&0x1F) { //addressing modes
-     case 0: PC++; addr = PC; cycles=2; break; //imm. (or abs.low for JSR/BRK)
-     case 0x1C: PC++; addr=csid->memory[PC]; PC++; addr+=csid->memory[PC]*256 + X; cycles=5; break; //abs,x
-     case 0xC: PC++; addr=csid->memory[PC]; PC++; addr+=csid->memory[PC]*256; cycles=4; break; //abs
-     case 0x14: PC++; addr = csid->memory[PC] + X; cycles=4; break; //zp,x
-     case 4: PC++; addr = csid->memory[PC]; cycles=3;  //zp
+    switch (c->IR&0x1F) { //addressing modes
+     case 0: c->PC++; c->addr = c->PC; c->cycles=2; break; //imm. (or abs.low for JSR/BRK)
+     case 0x1C: c->PC++; c->addr=csid->memory[c->PC]; c->PC++; c->addr+=csid->memory[c->PC]*256 + c->X; c->cycles=5; break; //abs,x
+     case 0xC: c->PC++; c->addr=csid->memory[c->PC]; c->PC++; c->addr+=csid->memory[c->PC]*256; c->cycles=4; break; //abs
+     case 0x14: c->PC++; c->addr = csid->memory[c->PC] + c->X; c->cycles=4; break; //zp,x
+     case 4: c->PC++; c->addr = csid->memory[c->PC]; c->cycles=3;  //zp
     }  
-    addr&=0xFFFF;  
-    switch (IR&0xE0) {
-     case 0x00: csid->memory[0x100+SP]=PC%256; SP--;SP&=0xFF; csid->memory[0x100+SP]=PC/256;  SP--;SP&=0xFF; csid->memory[0x100+SP]=ST; SP--;SP&=0xFF; 
-       PC = csid->memory[0xFFFE]+csid->memory[0xFFFF]*256-1; cycles=7; break; //BRK
-     case 0x20: if(IR&0xF) { ST &= 0x3D; ST |= (csid->memory[addr]&0xC0) | ( !(A&csid->memory[addr]) )<<1; } //BIT
-      else { csid->memory[0x100+SP]=(PC+2)%256; SP--;SP&=0xFF; csid->memory[0x100+SP]=(PC+2)/256;  SP--;SP&=0xFF; PC=csid->memory[addr]+csid->memory[addr+1]*256-1; cycles=6; }  break; //JSR
-     case 0x40: if(IR&0xF) { PC = addr-1; cycles=3; } //JMP
+    c->addr&=0xFFFF;  
+    switch (c->IR&0xE0) {
+     case 0x00: csid->memory[0x100+c->SP]=c->PC%256; c->SP--;c->SP&=0xFF; csid->memory[0x100+c->SP]=c->PC/256;  c->SP--;c->SP&=0xFF; csid->memory[0x100+c->SP]=c->ST; c->SP--;c->SP&=0xFF; 
+       c->PC = csid->memory[0xFFFE]+csid->memory[0xFFFF]*256-1; c->cycles=7; break; //BRK
+     case 0x20: if(c->IR&0xF) { c->ST &= 0x3D; c->ST |= (csid->memory[c->addr]&0xC0) | ( !(c->A&csid->memory[c->addr]) )<<1; } //BIT
+      else { csid->memory[0x100+c->SP]=(c->PC+2)%256; c->SP--;c->SP&=0xFF; csid->memory[0x100+c->SP]=(c->PC+2)/256;  c->SP--;c->SP&=0xFF; c->PC=csid->memory[c->addr]+csid->memory[c->addr+1]*256-1; c->cycles=6; }  break; //JSR
+     case 0x40: if(c->IR&0xF) { c->PC = c->addr-1; c->cycles=3; } //JMP
       else { 
-        if(SP>=0xFF){ 
+        if(c->SP>=0xFF){ 
             ret = 0xFE;
             goto returnCPU;
         } 
-        SP++;SP&=0xFF; ST=csid->memory[0x100+SP]; SP++;SP&=0xFF; T=csid->memory[0x100+SP]; SP++;SP&=0xFF; PC=csid->memory[0x100+SP]+T*256-1; cycles=6; }  break; //RTI
-     case 0x60: if(IR&0xF) { PC = csid->memory[addr]+csid->memory[addr+1]*256-1; cycles=5; } //JMP() (indirect)
+        c->SP++;c->SP&=0xFF; c->ST=csid->memory[0x100+c->SP]; c->SP++;c->SP&=0xFF; c->T=csid->memory[0x100+c->SP]; c->SP++;c->SP&=0xFF; c->PC=csid->memory[0x100+c->SP]+c->T*256-1; c->cycles=6; }  break; //RTI
+     case 0x60: if(c->IR&0xF) { c->PC = csid->memory[c->addr]+csid->memory[c->addr+1]*256-1; c->cycles=5; } //JMP() (indirect)
       else { 
-        if(SP>=0xFF) {
+        if(c->SP>=0xFF) {
             ret = 0xFF;
             goto returnCPU;
         }
-         SP++;SP&=0xFF; T=csid->memory[0x100+SP]; SP++;SP&=0xFF; PC=csid->memory[0x100+SP]+T*256-1; cycles=6; }  break; //RTS
-     case 0xC0: T=Y-csid->memory[addr]; ST&=124;ST|=(!(T&0xFF))<<1|(T&128)|(T>=0); break; //CPY
-     case 0xE0: T=X-csid->memory[addr]; ST&=124;ST|=(!(T&0xFF))<<1|(T&128)|(T>=0); break; //CPX
-     case 0xA0: Y=csid->memory[addr]; ST&=125;ST|=(!Y)<<1|(Y&128); break; //LDY
-     case 0x80: csid->memory[addr]=Y; storadd=addr;  //STY
+         c->SP++;c->SP&=0xFF; c->T=csid->memory[0x100+c->SP]; c->SP++;c->SP&=0xFF; c->PC=csid->memory[0x100+c->SP]+c->T*256-1; c->cycles=6; }  break; //RTS
+     case 0xC0: c->T=c->Y-csid->memory[c->addr]; c->ST&=124;c->ST|=(!(c->T&0xFF))<<1|(c->T&128)|(c->T>=0); break; //CPY
+     case 0xE0: c->T=c->X-csid->memory[c->addr]; c->ST&=124;c->ST|=(!(c->T&0xFF))<<1|(c->T&128)|(c->T>=0); break; //CPX
+     case 0xA0: c->Y=csid->memory[c->addr]; c->ST&=125;c->ST|=(!c->Y)<<1|(c->Y&128); break; //LDY
+     case 0x80: csid->memory[c->addr]=c->Y; c->storadd=c->addr;  //STY
     }
    }
   }
 
+  c->PC++; //PC&=0xFFFF; 
   returnCPU:
-  csid->cpu.PC = PC + 1; //PC&=0xFFFF; 
-  storadd = csid->cpu.storadd = 0;
-  csid->cpu.SP = SP;
-  csid->cpu.A = A;
-  csid->cpu.T = T;
-  csid->cpu.ST = ST;
-  csid->cpu.X = X;
-  csid->cpu.Y = Y;
-  csid->cpu.addr = addr;
-  csid->cpu.cycles = cycles;
-  csid->cpu.IR = IR;
   return ret; 
 } 
 
