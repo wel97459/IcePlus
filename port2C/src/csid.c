@@ -130,7 +130,8 @@ cSID cSID_LoadSID(const char* filename)
     // printf("Info: %s",SIDinfo);
 
     csid.initaddr =  csid.filedata[0xA] +  csid.filedata[0xB] ?  csid.filedata[0xA] * 256 +  csid.filedata[0xB] : loadaddr;
-    csid.playaddr  =  csid.filedata[0xC] * 256 +  csid.filedata[0xD]; 
+    csid.playaddr  =  csid.filedata[0xC] * 256 +  csid.filedata[0xD];
+    csid.playaddf = csid.playaddr;
     // printf("\nInit:$%4.4X,Play:$%4.4X, ",initaddr, playaddr);
 
     subtune_amount =  csid.filedata[0xF];
