@@ -51,6 +51,7 @@ void initGame(GameState* game) {
     loadSounds(game);
 
     game->csid = cSID_LoadSID(FILE_LOC "raw/Iceblox_Plus.sid");
+    cSID_initSubtune(&game->csid, 0, 0);
     Mix_HookMusic(cSID_play, &game->csid);
 
     game->running = true;
@@ -223,7 +224,7 @@ int main(int argc, char* argv[]) {
                     prepareLevel(&game);
                     game.gameMode = 4;
                     resetGameClip(&game);
-                    cSID_initSubtune(&game.csid, 1);
+                    cSID_initSubtune(&game.csid, game.level & 0x01 ? 0:1, -1);
                 }
             break;
             case MainGameLoop:
@@ -235,7 +236,7 @@ int main(int argc, char* argv[]) {
                 game.objs[0].look = (game.counter & 4) >> 2;
                 renderMainGame(&game);
                 if(game.counter == 1)
-                    cSID_initSubtune(&game.csid, 2);
+                    cSID_initSubtune(&game.csid, 2, 12);
                 // if (game.counter == 10) {
                 //     playSound(&game, 4);
                 // }

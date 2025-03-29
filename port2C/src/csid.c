@@ -165,11 +165,11 @@ cSID cSID_LoadSID(const char* filename)
     }
 
     cSID_init(&csid, csid.samplerate); 
-    cSID_initSubtune(&csid, csid.subtune);  
+    cSID_initSubtune(&csid, csid.subtune, -1);  
     return csid;
 }
 
-void cSID_initSubtune(cSID* csid, Uint8 subt)
+void cSID_initSubtune(cSID* csid, Uint8 subt, int playtime)
 {
     static int timeout;
     csid->subtune = subt; 
@@ -204,11 +204,14 @@ void cSID_initSubtune(cSID* csid, Uint8 subt)
     csid->framecnt=1;
     csid->finished=0;
     csid->cpu.CPUtime=0;
+    csid->playtime=playtime;
+    csid->freamCounter = 0;
 }
 
 void cSID_play(void* userdata, Uint8 *stream, int len ) //called by SDL at csid->samplerate pace
 {   
     cSID *csid = (cSID *)userdata;
+
     static int i,j, output;
     for(i=0;i<len;i+=2) {
         csid->framecnt--;
@@ -217,7 +220,13 @@ void cSID_play(void* userdata, Uint8 *stream, int len ) //called by SDL at csid-
             csid->finished=0;
             csid->cpu.PC=csid->playaddr;
             csid->cpu.SP=0xFF;
-            printf("freamcnt:%f  PC:%04X\n",csid->framecnt, csid->cpu.PC);
+            csid->freamCounter++;
+            if(csid->freamCounter > 27){
+                //printf("playtime: %i\n", csid->playtime);
+                if(csid->playtime>0) csid->playtime--;
+                csid->freamCounter=0;
+            }
+            //printf("freamcnt:%f  PC:%04X\n",csid->framecnt, csid->cpu.PC);
         }  
         if (csid->finished==0) { 
             while (csid->cpu.CPUtime<=csid->clock_ratio) { 
@@ -253,8 +262,13 @@ void cSID_play(void* userdata, Uint8 *stream, int len ) //called by SDL at csid-
         if (csid->SIDamount==3)
             output += cSID_SID(csid, 2, csid->SID_address[2]);
         //output = output >> 3;
-        stream[i] = output & 0xFF;
-        stream[i+1] = output >> 8;
+        if(csid->playtime == 0){
+            stream[i] = 0;
+            stream[i+1] = 0;
+        }else{
+            stream[i] = output & 0xFF;
+            stream[i+1] = output >> 8;
+        }
     }
 }
 
@@ -276,7 +290,7 @@ void cSID_initCPU (cSID* csid, uint16_t mempos) {
 uint8_t cSID_CPU (cSID* csid) //the CPU emulation for SID/PRG playback (ToDo: CIA/VIC-IRQ/NMI/RESET vectors, BCD-mode)
 { //'IR' is the instruction-register, naming after the hardware-equivalent
   struct cSID_CPU_s *c = &csid->cpu;
-  if(c->PC>0)printf("PC:%04X D:%02X\n", c->PC, csid->memory[c->PC]);
+
   uint8_t ret=0;
   c->IR=csid->memory[c->PC]; c->cycles=2; csid->cpu.storadd=0; //'cycle': ensure smallest 6510 runtime (for implied/register instructions)
   if(c->IR&1) {  //nybble2:  1/5/9/D:accu.instructions, 3/7/B/F:illegal ocsid->cpu.pcodes

@@ -65,6 +65,8 @@ typedef struct {
     int SID_model[3];
     int requested_SID_model;
     int sampleratio;
+    int freamCounter;
+    int playtime;
     uint8_t *filedata;
     uint8_t memory[MAX_DATA_LEN];
     float ADSRperiods[16];
@@ -92,7 +94,7 @@ cSID cSID_LoadSID(const char* filename);
 void cSID_init(cSID* csid, int samplerate);
 void cSID_initSID(cSID* csid);
 void cSID_initCPU (cSID* csid, uint16_t mempos);
-void cSID_initSubtune(cSID* csid, uint8_t subt);
+void cSID_initSubtune(cSID* csid, uint8_t subt, int playtime);
 int cSID_SID(cSID* csid, char num, unsigned int baseaddr);
 Uint8 cSID_CPU(cSID* csid); 
 void cSID_play(void* userdata, Uint8 *stream, int len );

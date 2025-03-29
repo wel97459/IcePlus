@@ -86,9 +86,11 @@ int addObject(GameState* game, int type, int pos, int look, int dir)
     return i;
 }
 
-void clearObjs(GameState* game){
+void clearObjs(GameState* game)
+{
     for (int i = 0; i < 10; i++) {
         game->objs[i].type = 0;
+        game->objs[i].look = 0;
     }
 }
 
@@ -557,7 +559,7 @@ void updateBreakBlock(GameState* game, int objNum){
         game->coins++;
         updateScore(game, 25);
         if (game->coins == 5) {
-            cSID_initSubtune(&game->csid, 2);
+            cSID_initSubtune(&game->csid, 2, -1);
             player->look = 1;
             game->gameMode = 7;
             game->counter = 0;
@@ -687,6 +689,7 @@ void updatePlayerDied(GameState* game, int objNum){
             updateScore(game, 0);
         } else {
             // if (this.soundOn != 0) {
+            cSID_initSubtune(&game->csid, 0, 0);
             playSound(game, 5);
             // }
 
@@ -714,7 +717,7 @@ int gameOver(GameState* game){
        //prepareHighscores();
        //return 0;
     }
-
+    clearObjs(game);
     buildShadows(game, 0);
     prepareIntro(game);
     return 0;
@@ -929,7 +932,7 @@ void animateIntro(GameState* game) {
         drawShadowSimple(game, i);
     }
 
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 3; i++){
         drawSpriteSimple(game, i);
     }
 
